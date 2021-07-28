@@ -60,38 +60,38 @@ class RoutingPlugin(QObject):
 
     def initGui(self):
         # Routing menu
-        self.optimalRouteAction = QAction(icon("routing.png"), self.tr("Routing"))
+        self.optimalRouteAction = QAction(icon("routing.png"), self.tr("Routing"), self.iface.mainWindow())
         self.iface.addAction(
             self.optimalRouteAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
         )
 
         # Chinese Postaman menu
-        self.cpAction = QAction(icon("chinesepostman.png"), self.tr("Patrol"))
+        self.cpAction = QAction(icon("chinesepostman.png"), self.tr("Patrol"), self.iface.mainWindow())
         self.iface.addAction(self.cpAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB)
 
         # Reachability menu
         self.reachabilityAction = QAction(
-            icon("reachability.png"), self.tr("Reachability")
+            icon("reachability.png"), self.tr("Reachability"), self.iface.mainWindow()
         )
         self.iface.addAction(
             self.reachabilityAction, self.iface.PLUGIN_MENU, self.iface.ANALYSIS_TAB
         )
 
         # Navigation menu
-        self.navigationAction = QAction(icon("navigate.png"), self.tr("Navigate"))
+        self.navigationAction = QAction(icon("navigate.png"), self.tr("Navigate"), self.iface.mainWindow())
         self.iface.addAction(
             self.navigationAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
         )
 
         # Day and Night
-        self.dayNightAction = QAction(icon("day-and-night.png"), self.tr("Day / Night"))
+        self.dayNightAction = QAction(icon("day-and-night.png"), self.tr("Day / Night"), self.iface.mainWindow())
         # Removed until we have one
         # self.iface.addAction(
         #     self.dayNightAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
         # )
 
         self.dataCatalogueAction = QAction(
-            icon("data-catalogue.png"), self.tr("Routing Data")
+            icon("data-catalogue.png"), self.tr("Routing Data"), self.iface.mainWindow()
         )
         self.iface.addAction(
             self.dataCatalogueAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
@@ -173,6 +173,7 @@ class RoutingPlugin(QObject):
         else:
             if self.optimalRouteBar is not None:
                 self.optimalRouteBar.hide()
+                self.optimalRouteBar = None
 
     @testclientavailability
     def showCP(self, show=True):
@@ -184,6 +185,7 @@ class RoutingPlugin(QObject):
         else:
             if self.cpBar is not None:
                 self.cpBar.hide()
+                self.cpBar = None
 
     @testclientavailability
     def showReachability(self, show=True):
@@ -197,6 +199,7 @@ class RoutingPlugin(QObject):
         else:
             if self.reachabilityBar is not None:
                 self.reachabilityBar.hide()
+                self.reachabilityBar = None
 
     @testclientavailability
     def showNavigation(self, show=True):
@@ -223,6 +226,7 @@ class RoutingPlugin(QObject):
         else:
             if self.navigationPanel is not None:
                 self.navigationPanel.hide()
+                self.navigationPanel = None
 
     def showDataCatalogue(self, show=True):
         if show:
@@ -235,6 +239,7 @@ class RoutingPlugin(QObject):
         else:
             if self.dataCatalogueBar is not None:
                 self.dataCatalogueBar.hide()
+                self.dataCatalogueBar = None
 
     def showDisclaimer(self):
         show = QSettings().value("kadasrouting/showDisclaimer", True, type=bool)
