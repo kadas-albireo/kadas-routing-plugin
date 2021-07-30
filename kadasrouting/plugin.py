@@ -21,6 +21,7 @@ from kadasrouting.gui.datacataloguebottombar import DataCatalogueBottomBar
 from kadasrouting.gui.navigationpanel import NavigationPanel
 from kadasrouting.gui.disclaimerdialog import DisclaimerDialog
 from kadasrouting.valhalla.client import ValhallaClient
+from kadasrouting.gui.drawpolygonmaptool import DrawPolygonMapTool
 
 from kadasrouting.core.memorylayersaver import MemoryLayerSaver
 
@@ -69,14 +70,6 @@ class RoutingPlugin(QObject):
         self.cpAction = QAction(icon("chinesepostman.png"), self.tr("Patrol"), self.iface.mainWindow())
         self.iface.addAction(self.cpAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB)
 
-        # Reachability menu
-        self.reachabilityAction = QAction(
-            icon("reachability.png"), self.tr("Reachability"), self.iface.mainWindow()
-        )
-        self.iface.addAction(
-            self.reachabilityAction, self.iface.PLUGIN_MENU, self.iface.ANALYSIS_TAB
-        )
-
         # Navigation menu
         self.navigationAction = QAction(icon("navigate.png"), self.tr("Navigate"), self.iface.mainWindow())
         self.iface.addAction(
@@ -99,7 +92,6 @@ class RoutingPlugin(QObject):
 
         self.actionsToggled = {
             self.navigationAction: self.showNavigation,
-            self.reachabilityAction: self.showReachability,
             self.optimalRouteAction: self.showOptimalRoute,
             self.cpAction: self.showCP,
             self.dataCatalogueAction: self.showDataCatalogue,
@@ -109,6 +101,16 @@ class RoutingPlugin(QObject):
         for action in self.actionsToggled:
             action.setCheckable(True)
             action.toggled.connect(partial(self._showPanel, action))
+
+        # Reachability menu
+        self.reachabilityAction = QAction(
+            icon("reachability.png"), self.tr("Reachability"), self.iface.mainWindow()
+        )
+        self.reachabilityAction.setCheckable(True)
+        self.reachabilityAction.toggled.connect(self.showReachability)
+        self.iface.addAction(
+            self.reachabilityAction, self.iface.PLUGIN_MENU, self.iface.ANALYSIS_TAB
+        )
 
         # Day Night action is independent
         self.dayNightAction.setCheckable(True)
@@ -188,18 +190,18 @@ class RoutingPlugin(QObject):
                 self.cpBar = None
 
     @testclientavailability
-    def showReachability(self, show=True):
-        if show:
+    def showReachability(self, active):
+        if active:
             if self.reachabilityBar is None:
-                self.reachabilityBar = ReachabilityBottomBar(
-                    self.iface.mapCanvas(), self.reachabilityAction
-                )
+                self.reachabilityBar = ReachabilityBottomBar(self.iface)
+                self.reachabilityBar.setAction(self.reachabilityAction)
+                self.iface.mapCanvas().setMapTool(self.reachabilityBar)
             self.showDisclaimer()
-            self.reachabilityBar.show()
-        else:
-            if self.reachabilityBar is not None:
-                self.reachabilityBar.hide()
-                self.reachabilityBar = None
+            #FIXME in class definition : self.reachabilityBar.show()
+        elif self.iface.mapCanvas().mapTool() and self.iface.mapCanvas().mapTool().action() == self.reachabilityBar:
+            self.iface.mapCanvas().unsetMapTool(self.iface.mapCanvas().mapTool())
+            #FIXME in class definition : self.reachabilityBar.hide()
+            self.reachabilityBar = None
 
     @testclientavailability
     def showNavigation(self, show=True):
@@ -252,3 +254,4 @@ class RoutingPlugin(QObject):
             pushWarning("Show day map")
         else:
             pushWarning("show night map")
+

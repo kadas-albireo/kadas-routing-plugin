@@ -3,8 +3,11 @@ import logging
 import json
 
 from PyQt5 import uic
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QDesktopWidget
+
+from qgis.gui import QgsMapTool
 
 from kadas.kadasgui import KadasBottomBar
 
@@ -33,25 +36,54 @@ WIDGET, BASE = uic.loadUiType(
 )
 
 
-class ReachabilityBottomBar(KadasBottomBar, WIDGET):
-    def __init__(self, canvas, action):
-        KadasBottomBar.__init__(self, canvas, "orange")
+class ReachabilityBottomBar(QgsMapTool):
+    def __init__(self, iface):
+        QgsMapTool.__init__(self, iface.mapCanvas())
+
+        self.iface = iface
+        self.widget = ReachabilityBottomBarWidget(self.iface)
+        self.widget.close.connect(self.close)
+
+    def activate(self):
+        self.widget.setVisible(True)
+        QgsMapTool.activate(self)
+
+    def deactivate(self):
+        self.widget.setVisible(False)
+        QgsMapTool.deactivate(self)
+
+    def close(self):
+        self.iface.mapCanvas().unsetMapTool(self)
+
+    # def canvasReleaseEvent(self, event):
+    #     if event.button() == Qt.LeftButton:
+    #         self.positionPicked(self.toMapCoordinates(event.pos()))
+    #     elif event.button() == Qt.RightButton:
+    #         self.iface.mapCanvas().unsetMapTool(self)
+
+class ReachabilityBottomBarWidget(KadasBottomBar, WIDGET):
+
+    close = pyqtSignal()
+
+    def __init__(self, iface):
+        KadasBottomBar.__init__(self, iface.mapCanvas(), "orange")
         self.setupUi(self)
         self.setStyleSheet("QFrame { background-color: orange; }")
-        self.action = action
-        self.canvas = canvas
+        self.iface = iface
+        self.canvas = self.iface.mapCanvas()
+        # self.action = action
+        
 
         self.btnClose.setIcon(QIcon(":/kadas/icons/close"))
         self.btnClose.setToolTip(self.tr("Close reachability dialog"))
 
-        self.action.toggled.connect(self.actionToggled)
-        self.btnClose.clicked.connect(self.action.toggle)
+        self.btnClose.clicked.connect(self.close)
 
         self.btnCalculate.clicked.connect(self.calculate)
 
         # Set the anchor to 0.5, 0.5 because the center of the cross needs to be in the position
         self.originSearchBox = LocationInputWidget(
-            canvas,
+            self.canvas,
             locationSymbolPath=iconPath("blue_cross.svg"),
             pinAnchorX=0.5,
             pinAnchorY=0.5,
@@ -183,8 +215,9 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
             pushWarning("could not generate isochrones")
             raise Exception(e)
 
-    def actionToggled(self, toggled):
-        if toggled:
+    def setVisible(self, visible):
+        KadasBottomBar.setVisible(self, visible)
+        if visible:
             self.setCenterAsSelected()
             # Update the point when the canvas extent changed.
             self.canvas.extentsChanged.connect(self.setCenterAsSelected)

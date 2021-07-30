@@ -41,8 +41,10 @@ class LocationInputWidget(QWidget):
         locationSymbolPath=":/kadas/icons/pin_red",
         pinAnchorX=0.5,
         pinAnchorY=1,
+        parentMapTool=None,
     ):
         QWidget.__init__(self)
+        self.parentMapTool = parentMapTool
         # UI
         self.canvas = canvas
         self.locationSymbolPath = locationSymbolPath
@@ -73,7 +75,7 @@ class LocationInputWidget(QWidget):
 
         self.setLayout(self.layout)
 
-        self.prevMapTool = self.canvas.mapTool()
+        self.prevMapTool = self.parentMapTool if self.parentMapTool else self.canvas.mapTool()
         self.mapTool = None
 
         self.canvas.mapToolSet.connect(self._mapToolSet)
