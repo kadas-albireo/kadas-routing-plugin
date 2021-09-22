@@ -168,7 +168,8 @@ class CPBottomBar(ValhallaRouteBottomBar, WIDGET):
                 costingOptions,
                 allPatrolAreaWGS,
             ) = self.prepareValhalla()
-        except TypeError:
+        except TypeError as e:
+            LOG.error(e)
             pushWarning(self.tr("Could not compute patrol: no polygon selected"))
             return
         try:

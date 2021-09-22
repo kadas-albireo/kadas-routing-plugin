@@ -570,9 +570,11 @@ class NavigationPanel(BASE, WIDGET):
         try:
             if iface.activeLayer().name() == "Routes":
                 self.navLayer = NavigationFromWaypointsLayer()
-        except AttributeError:
+        except AttributeError as e:
+            LOG.error(e)
             pass
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            LOG.error(e)
             self.setMessage(
                 self.tr(
                     "You must save your project to use waypoint layers for navigation"
@@ -580,6 +582,7 @@ class NavigationPanel(BASE, WIDGET):
             )
             return
         except TypeError:
+            LOG.error(e)
             self.setMessage(self.tr("There are no waypoints in the 'Routes' layer"))
             return
         if self.gpsConnection is None:
