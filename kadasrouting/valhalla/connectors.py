@@ -164,10 +164,10 @@ class ConsoleConnector(Connector):
         )
         # Add handling for chinese_postman if there is a patrol_polygon
         if patrol_polygon:
-            LOG.debug('patrol polygon')
+            # LOG.debug('patrol polygon')
             response = self._execute("chinese_postman", json.dumps(params))
         else:
-            LOG.debug('route')
+            # LOG.debug('route')
             response = self._execute("route", json.dumps(params))
         return response
 
