@@ -25,9 +25,12 @@ from qgis.core import (
     QgsUnitTypes,
     QgsPointXY,
     QgsPoint,
+    QgsLineString,
     QgsVectorLayer,
     QgsWkbTypes,
     QgsGeometry,
+    QgsGeometryUtils,
+    DEFAULT_SEGMENT_EPSILON
 )
 
 from qgis.gui import QgsRubberBand
@@ -245,6 +248,35 @@ def getInstructionsToWaypoint(waypoint, gpsinfo):
     }
 
 
+def closestSegmentWithContextCustom(line_geometry, point, excluded_segments):
+    """Custom implementation of closestSegmentWithContext to get the segment beside the excluded one."""
+    line = QgsLineString()
+    line.fromWkt(line_geometry.asWkt())
+    square_distance = 99999
+    test_distance = 0
+    vertex_after = -1
+    point_on_segment = QgsPointXY()
+    if line.numPoints() < 2:
+        return None, None, None
+
+    for i in range(line.numPoints() - 1):
+        if (i + 1) in excluded_segments:
+            continue
+        previous_point = line.points()[i]
+        current_point = line.points()[i + 1]
+        test_distance = QgsGeometryUtils.sqrDistToLine(point.x(), point.y(), previous_point.x(), previous_point.y(), current_point.x(), current_point.y(), DEFAULT_SEGMENT_EPSILON)
+        if test_distance[0] < square_distance:
+            square_distance = test_distance[0]
+            point_on_segment.setX(test_distance[1])
+            point_on_segment.setY(test_distance[2])
+            vertex_after = i + 1
+
+    if i == line.numPoints() - 1:
+        return None, None, None
+
+    return square_distance, point_on_segment, vertex_after
+
+
 class NavigationFromWaypointsLayer:
     def __init__(self):
         self.crs = QgsCoordinateReferenceSystem(4326)
@@ -334,10 +366,27 @@ class NavigationPanel(BASE, WIDGET):
         self.warningShown = False
         self.iface.messageBar().widgetRemoved.connect(self.setWarningShownOff)
         self.labelConfigureWarnings.linkActivated.connect(self.configureWarnings)
+        # Legs
         self.visited_legs = []
         self.previous_leg = None
         self.current_leg = None
-        self.next_leg = None
+        # Maneuvers or sub leg
+        self.visited_maneuvers = {}
+        self.previous_maneuver = None
+        self.current_maneuver = None
+        # Storing current layer
+        self.layer = None
+
+    def reset_navigation(self):
+        LOG.debug('Reset navigation.')
+        # Legs
+        self.visited_legs = []
+        self.previous_leg = None
+        self.current_leg = None
+        # Maneuvers or sub leg
+        self.visited_maneuvers = {}
+        self.previous_maneuver = None
+        self.current_maneuver = None
 
     def configureWarnings(self, url):
         threshold = QSettings().value(
@@ -376,7 +425,12 @@ class NavigationPanel(BASE, WIDGET):
 
         legs = list(maneuvers.keys())
         for i, line in enumerate(legs):
-            _, _pt, segment, _ = line.closestSegmentWithContext(pt)
+            # _, _pt, segment, _ = line.closestSegmentWithContext(pt)
+            if self.current_leg is not None:
+                excluded_segments = self.visited_maneuvers[self.current_leg]
+            else:
+                excluded_segments = []
+            _, _pt, segment = closestSegmentWithContextCustom(line, pt, excluded_segments)
             dist = qgsdistance.convertLengthMeasurement(
                 qgsdistance.measureLine(pt, _pt), QgsUnitTypes.DistanceMeters
             )
@@ -386,8 +440,21 @@ class NavigationPanel(BASE, WIDGET):
                 closest_point = _pt
                 min_dist = dist
 
+        if closest_leg != self.current_leg and closest_leg is not None:
+            self.previous_leg = self.current_leg
+            self.current_leg = closest_leg
+            self.visited_maneuvers[closest_leg] = []
+
+        if closest_segment != self.current_maneuver and closest_segment is not None:
+            if self.current_maneuver is not None:
+                self.visited_maneuvers[closest_leg].append(self.current_maneuver)
+            self.previous_maneuver = self.current_maneuver
+            self.current_maneuver = closest_segment
+
         LOG.debug('Min distance: %s' % min_dist)
         LOG.debug("Closest segment: %s" % closest_segment)
+        LOG.debug("Excluded segments: ")
+        LOG.debug(self.visited_maneuvers[closest_leg])
 
         if closest_leg is not None:
             leg_points = closest_leg.asPolyline()
@@ -483,6 +550,12 @@ class NavigationPanel(BASE, WIDGET):
             self.setMessage(self.tr("Cannot connect to GPS"))
             return
         layer = self.iface.activeLayer()
+        if not self.layer:
+            self.layer = layer
+
+        if self.layer != layer:
+            LOG.debug("Active layer changed, perhaps needs to reset the navigation history")
+
         # LOG.debug("Debug: type(layer) = {}".format(type(layer)))
         point = QgsPointXY(gpsinfo.longitude, gpsinfo.latitude)
         if gpsinfo.speed > GPS_MIN_SPEED:
@@ -741,7 +814,7 @@ class NavigationPanel(BASE, WIDGET):
                 )
             )
             return
-        except TypeError:
+        except TypeError as e:
             LOG.error(e)
             self.setMessage(self.tr("There are no waypoints in the 'Routes' layer"))
             return

@@ -219,6 +219,7 @@ class RoutingPlugin(QObject):
                 self.navigationPanel.setParent(self.iface.mapCanvas())
                 _resize()
             self.showDisclaimer()
+            self.navigationPanel.reset_navigation()
             self.navigationPanel.show()
         else:
             if self.navigationPanel is not None:
