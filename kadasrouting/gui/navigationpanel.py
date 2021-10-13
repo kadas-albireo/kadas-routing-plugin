@@ -248,6 +248,12 @@ def getInstructionsToWaypoint(waypoint, gpsinfo):
     }
 
 
+def convert_line_geometry(line_geometry):
+    line = QgsLineString()
+    line.fromWkt(line_geometry.asWkt())
+    return line
+
+
 def closestSegmentWithContextCustom(line_geometry, point, excluded_segments):
     """Custom implementation of closestSegmentWithContext to get the segment beside the excluded one."""
     line = QgsLineString()
@@ -370,10 +376,10 @@ class NavigationPanel(BASE, WIDGET):
         self.visited_legs = []
         self.previous_leg = None
         self.current_leg = None
-        # Maneuvers or sub leg
-        self.visited_maneuvers = {}
-        self.previous_maneuver = None
-        self.current_maneuver = None
+        # Segments
+        self.visited_segments = {}
+        self.previous_segment = None
+        self.current_segment = None
         # Storing current layer
         self.layer = None
 
@@ -384,9 +390,9 @@ class NavigationPanel(BASE, WIDGET):
         self.previous_leg = None
         self.current_leg = None
         # Maneuvers or sub leg
-        self.visited_maneuvers = {}
-        self.previous_maneuver = None
-        self.current_maneuver = None
+        self.visited_segments = {}
+        self.previous_segment = None
+        self.current_segment = None
 
     def configureWarnings(self, url):
         threshold = QSettings().value(
@@ -424,10 +430,12 @@ class NavigationPanel(BASE, WIDGET):
         qgsdistance.setEllipsoid(qgsdistance.sourceCrs().ellipsoidAcronym())
 
         legs = list(maneuvers.keys())
+        LOG.debug('Number of legs: %s' % len(legs))
         for i, line in enumerate(legs):
+            LOG.debug(line.asWkt())
             # _, _pt, segment, _ = line.closestSegmentWithContext(pt)
             if self.current_leg is not None:
-                excluded_segments = self.visited_maneuvers[self.current_leg]
+                excluded_segments = self.visited_segments[self.current_leg]
             else:
                 excluded_segments = []
             _, _pt, segment = closestSegmentWithContextCustom(line, pt, excluded_segments)
@@ -443,34 +451,73 @@ class NavigationPanel(BASE, WIDGET):
         if closest_leg != self.current_leg and closest_leg is not None:
             self.previous_leg = self.current_leg
             self.current_leg = closest_leg
-            self.visited_maneuvers[closest_leg] = []
+            self.visited_segments[closest_leg] = []
 
-        if closest_segment != self.current_maneuver and closest_segment is not None:
-            if self.current_maneuver is not None:
-                self.visited_maneuvers[closest_leg].append(self.current_maneuver)
-            self.previous_maneuver = self.current_maneuver
-            self.current_maneuver = closest_segment
+        # If the maneuver is empty set it to 1
+        if len(self.visited_segments[closest_leg]) == 0:
+            self.current_segment = 0
 
-        LOG.debug('Min distance: %s' % min_dist)
-        LOG.debug("Closest segment: %s" % closest_segment)
-        LOG.debug("Excluded segments: ")
-        LOG.debug(self.visited_maneuvers[closest_leg])
+        # Checking if we are still in the same segment
+        line_string = convert_line_geometry(closest_leg)
+        if self.current_segment + 2 < line_string.numPoints():
+            previous_point = line_string.points()[self.current_segment]
+            current_point = line_string.points()[self.current_segment + 1]
+            next_point = line_string.points()[self.current_segment + 2]
+            current_distance = QgsGeometryUtils.sqrDistToLine(
+                pt.x(), pt.y(),
+                previous_point.x(), previous_point.y(),
+                current_point.x(), current_point.y(),
+                DEFAULT_SEGMENT_EPSILON)
+            next_distance = QgsGeometryUtils.sqrDistToLine(
+                pt.x(), pt.y(),
+                current_point.x(), current_point.y(),
+                next_point.x(), next_point.y(),
+                DEFAULT_SEGMENT_EPSILON)
+
+            LOG.debug('Next distance, current distance: %s %s' % (next_distance, current_distance))
+            LOG.debug('Closest point old:')
+            LOG.debug(closest_point)
+            if next_distance[0] < current_distance[0]:
+                self.visited_segments[closest_leg].append(self.current_segment)
+                self.previous_segment = self.current_segment
+                self.current_segment += 1
+                closest_point = QgsPointXY(next_distance[1], next_distance[2])
+            else:
+                closest_point = QgsPointXY(current_distance[1], current_distance[2])
+            LOG.debug('Closest point new:')
+            LOG.debug(closest_point)
+
+        LOG.debug('Self current segment: %s' % self.current_segment)
+
+        # if closest_segment != self.current_maneuver and closest_segment is not None:
+        #     if self.current_maneuver is not None:
+        #         self.visited_maneuvers[closest_leg].append(self.current_maneuver)
+        #     self.previous_maneuver = self.current_maneuver
+        #     self.current_maneuver = closest_segment
+
+        # LOG.debug('Min distance: %s' % min_dist)
+        # LOG.debug("Closest segment: %s" % closest_segment)
+        # LOG.debug("Excluded segments: ")
+        # LOG.debug(self.visited_maneuvers[closest_leg])
 
         if closest_leg is not None:
             leg_points = closest_leg.asPolyline()
             maneuvers = maneuvers[closest_leg]
             for i, maneuver in enumerate(maneuvers[:-1]):
-                if (
-                    maneuver["begin_shape_index"] < closest_segment
-                    and maneuver["end_shape_index"] >= closest_segment
-                ):
+                LOG.debug('Checking maneuver %s' % i)
+                if (maneuver["begin_shape_index"] <= self.current_segment < maneuver["end_shape_index"]):
                     points = [closest_point]
-                    points.extend(
-                        leg_points[closest_segment: maneuver["end_shape_index"]]
-                    )
+                    points.append(leg_points[maneuver["end_shape_index"]])
+                    # points.extend(
+                    #     leg_points[self.current_segment + 1: maneuver["end_shape_index"]]
+                    # )
                     distance_to_next = qgsdistance.convertLengthMeasurement(
                         qgsdistance.measureLine(points), QgsUnitTypes.DistanceMeters
                     )
+                    LOG.debug('Begin shape index, current segment, end shape index: %s, %s, %s' % (maneuver["begin_shape_index"], self.current_segment, maneuver["end_shape_index"]))
+                    LOG.debug('Points in line: ')
+                    LOG.debug([p.asWkt() for p in points])
+                    LOG.debug('Distance to next: %s' % distance_to_next)
 
                     message = maneuvers[i + 1]["instruction"]
                     if i == len(maneuvers) - 2:
