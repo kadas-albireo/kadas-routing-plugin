@@ -13,6 +13,8 @@ from kadasrouting.gui.locationinputwidget import LocationInputWidget
 from kadasrouting.utilities import iconPath
 
 from qgis.core import QgsCoordinateReferenceSystem
+import processing
+
 
 from kadasrouting.gui.valhallaroutebottombar import ValhallaRouteBottomBar
 
@@ -103,3 +105,21 @@ class OptimalRouteBottomBar(ValhallaRouteBottomBar, WIDGET):
         for waypoint in self.waypoints:
             self.addWaypointPin(waypoint)
         super().addPins()
+
+    def validatePatrol(self):
+        import processing
+        from qgis.core import QgsProject
+
+        inputLayer = QgsProject.instance().mapLayersByName("patrol_area")[0]
+        clippath = QgsProject.instance().mapLayersByName("Patrol")[0]
+        outpath = QgsVectorLayer(
+            "Polyline?crs=epsg:4326&field=centerx:double&field=centery:double&field=interval:double",
+            "someName",
+            "memory",
+        )
+        # run clip tool
+        processing.run(
+            "qgis:clip", {"INPUT": inputLayer, "OVERLAY": clippath, "OUTPUT": outpath}
+        )
+        # add output to qgis interface
+        self.iface.addVectorLayer(outpath)
