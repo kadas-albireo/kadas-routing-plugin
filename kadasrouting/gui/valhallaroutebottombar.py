@@ -50,7 +50,6 @@ class ValhallaRouteBottomBar(KadasBottomBar):
     def __init__(self, canvas, action, plugin):
         KadasBottomBar.__init__(self, canvas, "orange")
         self.setupUi(self)
-        self.setStyleSheet("QFrame { background-color: orange; }")
         self.action = action
         self.plugin = plugin
         self.canvas = canvas
