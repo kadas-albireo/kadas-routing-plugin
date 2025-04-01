@@ -5,6 +5,7 @@
   "httpd": {
     "service": {
       "drain_seconds": 28,
+      "timeout_seconds": 60,
       "interrupt": "ipc:///tmp/interrupt",
       "listen": "tcp://*:8002",
       "loopback": "ipc:///tmp/loopback",
@@ -154,31 +155,31 @@
       "max_distance": 5000000.0,
       "max_locations": 20,
       "max_matrix_distance": 400000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "auto_shorter": {
       "max_distance": 5000000.0,
       "max_locations": 20,
       "max_matrix_distance": 400000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "bicycle": {
       "max_distance": 500000.0,
       "max_locations": 50,
       "max_matrix_distance": 200000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "bikeshare": {
       "max_distance": 500000.0,
       "max_locations": 50,
       "max_matrix_distance": 200000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "bus": {
       "max_distance": 5000000.0,
       "max_locations": 50,
       "max_matrix_distance": 400000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "centroid": {
       "max_distance": 200000.0,
@@ -188,7 +189,7 @@
       "max_distance": 5000000.0,
       "max_locations": 20,
       "max_matrix_distance": 400000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "isochrone": {
       "max_contours": 4,
@@ -200,6 +201,7 @@
     "max_alternates": 2,
     "max_exclude_locations": 50,
     "max_exclude_polygons_length": 10000000,
+    "max_chinese_polygon_length": 10000000,
     "max_radius": 200,
     "max_reachability": 100,
     "max_timedep_distance": 500000,
@@ -207,25 +209,25 @@
       "max_distance": 500000.0,
       "max_locations": 50,
       "max_matrix_distance": 200000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "motorcycle": {
       "max_distance": 500000.0,
       "max_locations": 50,
       "max_matrix_distance": 200000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "multimodal": {
       "max_distance": 500000.0,
       "max_locations": 50,
       "max_matrix_distance": 0.0,
-      "max_matrix_locations": 0
+      "max_matrix_location_pairs": 0
     },
     "pedestrian": {
       "max_distance": 250000.0,
       "max_locations": 50,
       "max_matrix_distance": 200000.0,
-      "max_matrix_locations": 50,
+      "max_matrix_location_pairs": 50,
       "max_transit_walking_distance": 10000,
       "min_transit_walking_distance": 1
     },
@@ -237,11 +239,11 @@
       "max_distance": 5000000.0,
       "max_locations": 20,
       "max_matrix_distance": 400000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "trace": {
-      "max_best_paths": 4,
-      "max_best_paths_shape": 100,
+      "max_alternates": 4,
+      "max_alternates_shape": 100,
       "max_distance": 200000.0,
       "max_gps_accuracy": 100.0,
       "max_search_radius": 100.0,
@@ -251,13 +253,13 @@
       "max_distance": 500000.0,
       "max_locations": 50,
       "max_matrix_distance": 200000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     },
     "truck": {
       "max_distance": 5000000.0,
       "max_locations": 20,
       "max_matrix_distance": 400000.0,
-      "max_matrix_locations": 50
+      "max_matrix_location_pairs": 50
     }
   },
   "thor": {
