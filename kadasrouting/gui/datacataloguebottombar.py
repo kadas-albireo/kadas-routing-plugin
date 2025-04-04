@@ -227,10 +227,8 @@ class DataCatalogueBottomBar(KadasBottomBar, WIDGET):
                 "/kadasrouting/active_repository", self.repoUrlComboBox.currentIndex()
             )
         )
-        self.repoUrlComboBox.setCurrentText(
-            DEFAULT_REPOSITORIES[active_repository_id]["name"]
-        )
-        self.repoUrlComboBox.setCurrentIndex(active_repository_id)
+        if 0 <= active_repository_id < len(DEFAULT_REPOSITORIES):
+            self.repoUrlComboBox.setCurrentIndex(active_repository_id)
 
     def reloadRepository(self):
         # Update the list
