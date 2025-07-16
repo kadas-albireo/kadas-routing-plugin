@@ -141,11 +141,6 @@ class ValhallaRouteBottomBar(KadasBottomBar):
             self.radioAreasToAvoidPolygon.setChecked(True)
             index = self.comboAreasToAvoidLayers.findText("avoid_areas")
             self.comboAreasToAvoidLayers.removeItem(index)
-        elif ele.startswith('patrol_area') and hasattr(self, 'radioPatrolAreaPolygon'):
-            self.radioPatrolAreaPolygon.setChecked(True)
-            index = self.comboPatrolAreaLayers.findText("patrol_area")
-            self.comboPatrolAreaLayers.removeItem(index) 
-           
     
     def populateLayerSelector(self):
         self.comboAreasToAvoidLayers.clear()

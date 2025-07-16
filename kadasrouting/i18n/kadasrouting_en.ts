@@ -84,34 +84,6 @@
     </message>
 </context>
 <context>
-    <name>CPBottomBar</name>
-    <message>
-        <location filename="cpbottombar.py" line="119"/>
-        <source>Custom polygon button is checked, but no polygon is drawn</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="130"/>
-        <source>The polygon layer for Patrol must contain exactly only one polygon.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="140"/>
-        <source>Polygon layer button is checked for Patrol, but no layer polygon is selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="172"/>
-        <source>Could not compute patrol: no polygon selected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="182"/>
-        <source>Could not compute route</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Connector</name>
     <message>
         <location filename="connectors.py" line="52"/>
@@ -252,11 +224,6 @@
 <context>
     <name>KadasPluginManagerBase</name>
     <message>
-        <location filename="cpbottombar.ui" line="20"/>
-        <source>Frame</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="optimalroutebottombar.ui" line="299"/>
         <source>Fastest</source>
         <translation type="unfinished"></translation>
@@ -267,43 +234,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="cpbottombar.ui" line="208"/>
-        <source>From</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="optimalroutebottombar.ui" line="216"/>
         <source>Route type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="cpbottombar.ui" line="194"/>
-        <source>To</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="215"/>
-        <source>Vehicle type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="optimalroutebottombar.ui" line="32"/>
         <source>Waypoints</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="360"/>
-        <source>Clear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="66"/>
-        <source>Reverse</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="280"/>
-        <source>Calculate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -337,31 +274,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="cpbottombar.ui" line="88"/>
-        <source>Areas to avoid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="338"/>
-        <source>Draw in Canvas</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="312"/>
-        <source>Polygon layer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="319"/>
-        <source>Custom polygon</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="142"/>
-        <source>No areas to avoid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="datacataloguebottombar.ui" line="32"/>
         <source>Routing Data Repository</source>
         <translation type="unfinished"></translation>
@@ -369,21 +281,6 @@
     <message>
         <location filename="datacataloguebottombar.ui" line="44"/>
         <source>Repository</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="395"/>
-        <source>Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="251"/>
-        <source>Start navigation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="306"/>
-        <source>Patrol area</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
