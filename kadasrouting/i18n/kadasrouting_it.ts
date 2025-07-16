@@ -83,34 +83,6 @@
     </message>
 </context>
 <context>
-    <name>CPBottomBar</name>
-    <message>
-        <location filename="cpbottombar.py" line="119"/>
-        <source>Custom polygon button is checked, but no polygon is drawn</source>
-        <translation>Il pulsante si utilizzo di un poligono &quot;custom&quot; è attivo, ma non c&apos;è nessun poligono disegnato</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="130"/>
-        <source>The polygon layer for Patrol must contain exactly only one polygon.</source>
-        <translation>Il pulsante di utilizzo di un layer &quot;custom&quot; per la pattuglia è attivo, ma nessun layer è selezionato.</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="140"/>
-        <source>Polygon layer button is checked for Patrol, but no layer polygon is selected</source>
-        <translation>Il pulsante si utilizzo di un poligono &quot;custom&quot; per la pattuglia è attivo, ma non c&apos;è nessun poligono disegnato</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="172"/>
-        <source>Could not compute patrol: no polygon selected</source>
-        <translation>impossibile calcolare la pattuglia: nessun poligono selezionato</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.py" line="182"/>
-        <source>Could not compute route</source>
-        <translation>non è possibile calcolare la strada</translation>
-    </message>
-</context>
-<context>
     <name>Connector</name>
     <message>
         <location filename="connectors.py" line="52"/>
@@ -251,11 +223,6 @@
 <context>
     <name>KadasPluginManagerBase</name>
     <message>
-        <location filename="cpbottombar.ui" line="20"/>
-        <source>Frame</source>
-        <translation>Frame</translation>
-    </message>
-    <message>
         <location filename="optimalroutebottombar.ui" line="299"/>
         <source>Fastest</source>
         <translation>più veloce</translation>
@@ -266,44 +233,14 @@
         <translation>più corto</translation>
     </message>
     <message>
-        <location filename="cpbottombar.ui" line="208"/>
-        <source>From</source>
-        <translation>da</translation>
-    </message>
-    <message>
         <location filename="optimalroutebottombar.ui" line="216"/>
         <source>Route type</source>
         <translation>Tipo di rotta</translation>
     </message>
     <message>
-        <location filename="cpbottombar.ui" line="194"/>
-        <source>To</source>
-        <translation>a</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="215"/>
-        <source>Vehicle type</source>
-        <translation>Tipo di veicolo</translation>
-    </message>
-    <message>
         <location filename="optimalroutebottombar.ui" line="32"/>
         <source>Waypoints</source>
         <translation>Punti di navigazione</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="360"/>
-        <source>Clear</source>
-        <translation>Cancella</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="66"/>
-        <source>Reverse</source>
-        <translation>Inverti</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="280"/>
-        <source>Calculate</source>
-        <translation>Calcola</translation>
     </message>
     <message>
         <location filename="reachabilitybottombar.ui" line="40"/>
@@ -336,31 +273,6 @@
         <translation>Rimuovi il risultato precedente</translation>
     </message>
     <message>
-        <location filename="cpbottombar.ui" line="88"/>
-        <source>Areas to avoid</source>
-        <translation>Aree da evitare</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="338"/>
-        <source>Draw in Canvas</source>
-        <translation>Disegna sulla cartina</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="312"/>
-        <source>Polygon layer</source>
-        <translation>Layer di poligoni</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="319"/>
-        <source>Custom polygon</source>
-        <translation>poligono personalizzato</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="142"/>
-        <source>No areas to avoid</source>
-        <translation>Non ci sono aree da evitare</translation>
-    </message>
-    <message>
         <location filename="datacataloguebottombar.ui" line="32"/>
         <source>Routing Data Repository</source>
         <translation>Catalogo di dati per il routing</translation>
@@ -369,21 +281,6 @@
         <location filename="datacataloguebottombar.ui" line="44"/>
         <source>Repository</source>
         <translation>Deposito</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="395"/>
-        <source>Save</source>
-        <translation>Salvare</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="251"/>
-        <source>Start navigation</source>
-        <translation>Iniziare la navigazione</translation>
-    </message>
-    <message>
-        <location filename="cpbottombar.ui" line="306"/>
-        <source>Patrol area</source>
-        <translation>Area da pattugliare</translation>
     </message>
 </context>
 <context>

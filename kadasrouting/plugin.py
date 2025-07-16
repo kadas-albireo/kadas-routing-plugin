@@ -15,7 +15,6 @@ from kadas.kadasgui import KadasPluginInterface
 from kadasrouting.utilities import icon, pushWarning, tr
 from kadasrouting.core.optimalroutelayer import OptimalRouteLayerType
 from kadasrouting.gui.optimalroutebottombar import OptimalRouteBottomBar
-from kadasrouting.gui.cpbottombar import CPBottomBar
 from kadasrouting.gui.reachabilitybottombar import ReachabilityBottomBar
 from kadasrouting.gui.datacataloguebottombar import DataCatalogueBottomBar
 from kadasrouting.gui.navigationpanel import NavigationPanel
@@ -53,7 +52,6 @@ class RoutingPlugin(QObject):
 
         self.iface = KadasPluginInterface.cast(iface)
         self.optimalRouteBar = None
-        self.cpBar = None
         self.reachabilityBar = None
         self.dataCatalogueBar = None
         self.navigationPanel = None
@@ -67,10 +65,6 @@ class RoutingPlugin(QObject):
         self.iface.addAction(
             self.optimalRouteAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
         )
-
-        # Chinese Postaman menu
-        self.cpAction = QAction(icon("chinesepostman.png"), self.tr("Patrol") + "\n(Beta)")
-        self.iface.addAction(self.cpAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB)
 
         # Reachability menu
         self.reachabilityAction = QAction(
@@ -105,7 +99,6 @@ class RoutingPlugin(QObject):
             self.navigationAction: self.showNavigation,
             self.reachabilityAction: self.showReachability,
             self.optimalRouteAction: self.showOptimalRoute,
-            self.cpAction: self.showCP,
             self.dataCatalogueAction: self.showDataCatalogue,
         }
 
@@ -152,16 +145,12 @@ class RoutingPlugin(QObject):
     
     def enableRoutingMenus(self, val):
         self.optimalRouteAction.setEnabled(val)
-        self.cpAction.setEnabled(val)
         self.reachabilityAction.setEnabled(val)
         self.navigationAction.setEnabled(val)
     
     def unload(self):
         self.iface.removeAction(
             self.optimalRouteAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
-        )
-        self.iface.removeAction(
-            self.cpAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
         )
         self.iface.removeAction(
             self.reachabilityAction, self.iface.PLUGIN_MENU, self.iface.ANALYSIS_TAB
@@ -204,20 +193,6 @@ class RoutingPlugin(QObject):
         if self.optimalRouteBar is not None:
             self.optimalRouteBar.resetCombo(show)
 
-    @testclientavailability
-    def showCP(self, show=True):
-        if show:
-            if self.cpBar is None:
-                self.cpBar = CPBottomBar(self.iface.mapCanvas(), self.cpAction, self)
-            self.showDisclaimer()
-            self.cpBar.show()
-        else:
-            if self.cpBar is not None:
-                self.cpBar.hide()
-        
-        if self.cpBar is not None:        
-            self.cpBar.resetCombo(show)
-                
     @testclientavailability
     def showReachability(self, show=True):
         if show:
