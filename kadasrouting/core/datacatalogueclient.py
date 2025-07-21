@@ -85,6 +85,7 @@ class DataCatalogueClient(QObject):
         query = QUrlQuery()
         url = QUrl(f"{self.url}/search")
         query.addQueryItem("q", self.search_str)
+        query.addQueryItem("num", "100")
         query.addQueryItem("f", "pjson")
         url.setQuery(query.query())
         response = QgsNetworkAccessManager.blockingGet(QNetworkRequest(QUrl(url)))
