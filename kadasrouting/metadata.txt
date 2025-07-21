@@ -8,7 +8,7 @@ version=0.22
 author=CampToCamp
 email=info@camptocamp.com
 
-# Tags are comma separated with spaces allowed
+# Tags are comma separated with spaces allowed 
 tags=
 
 homepage=
