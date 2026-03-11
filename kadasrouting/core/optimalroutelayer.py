@@ -261,7 +261,7 @@ class OptimalRouteLayer(KadasItemLayer):
         closest_segment = None
         qgsdistance = QgsDistanceArea()
         qgsdistance.setSourceCrs(
-            QgsCoordinateReferenceSystem(4326), QgsProject.instance().transformContext()
+            QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject.instance().transformContext()
         )
         qgsdistance.setEllipsoid(qgsdistance.sourceCrs().ellipsoidAcronym())
 
@@ -324,7 +324,7 @@ class OptimalRouteLayer(KadasItemLayer):
                     eta_string = eta.strftime("%H:%M")
 
                     displayed_point = KadasCoordinateFormat.instance().getDisplayString(
-                        closest_point, QgsCoordinateReferenceSystem(4326)
+                        closest_point, QgsCoordinateReferenceSystem("EPSG:4326")
                     )
                     if ", " not in displayed_point:
                         displayed_point = displayed_point.replace(",", ", ")

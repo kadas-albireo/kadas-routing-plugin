@@ -92,7 +92,7 @@ def transformToWGS(crs):
     :returns: transformer to use in various modules.
     :rtype: QgsCoordinateTransform
     """
-    outCrs = QgsCoordinateReferenceSystem(4326)
+    outCrs = QgsCoordinateReferenceSystem("EPSG:4326")
     xformer = QgsCoordinateTransform(crs, outCrs, QgsProject.instance())
 
     return xformer

@@ -103,7 +103,7 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
         point = self.originSearchBox.point
 
         # Convert point to canvas CRS
-        inCrs = QgsCoordinateReferenceSystem(4326)
+        inCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         canvasCrs = self.canvas.mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(inCrs, canvasCrs, QgsProject.instance())
         canvasPoint = transform.transform(point)

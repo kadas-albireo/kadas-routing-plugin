@@ -76,7 +76,7 @@ class OptimalRouteBottomBar(ValhallaRouteBottomBar, WIDGET):
     def addWaypointPin(self, waypoint):
         """Create a new pin for a waypoint with its symbology"""
         # Create pin with waypoint symbology
-        canvasCrs = QgsCoordinateReferenceSystem(4326)
+        canvasCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         waypointPin = KadasPinItem(canvasCrs)
         waypointPin.setPosition(KadasItemPos(waypoint.x(), waypoint.y()))
         waypointPin.setup(

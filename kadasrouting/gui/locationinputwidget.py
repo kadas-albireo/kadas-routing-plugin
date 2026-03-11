@@ -129,7 +129,7 @@ class LocationInputWidget(QWidget):
 
     def updatePoint(self, point, button):
         """When the map tool click the map canvas"""
-        outCrs = QgsCoordinateReferenceSystem(4326)
+        outCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         canvasCrs = self.canvas.mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(canvasCrs, outCrs, QgsProject.instance())
         wgspoint = transform.transform(point)
@@ -150,7 +150,7 @@ class LocationInputWidget(QWidget):
         try:
             if not self.point:
                 return
-            inCrs = QgsCoordinateReferenceSystem(4326)
+            inCrs = QgsCoordinateReferenceSystem("EPSG:4326")
             canvasCrs = self.canvas.mapSettings().destinationCrs()
             transform = QgsCoordinateTransform(inCrs, canvasCrs, QgsProject.instance())
             canvasPoint = transform.transform(self.point)

@@ -16,7 +16,7 @@ class CanvasLayerSaver:
         self,
         name,
         features=None,
-        crs=QgsCoordinateReferenceSystem(4326),
+        crs=QgsCoordinateReferenceSystem("EPSG:4326"),
         color=QColor("lightGray"),
         style=None,
     ):

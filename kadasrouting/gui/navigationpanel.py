@@ -174,7 +174,7 @@ def getInstructionsToWaypoint(waypoint, gpsinfo):
     point = QgsPointXY(gpsinfo.longitude, gpsinfo.latitude)
     qgsdistance = QgsDistanceArea()
     qgsdistance.setSourceCrs(
-        QgsCoordinateReferenceSystem(4326), QgsProject.instance().transformContext()
+        QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject.instance().transformContext()
     )
     qgsdistance.setEllipsoid(qgsdistance.sourceCrs().ellipsoidAcronym())
     wpangle = math.degrees(qgsdistance.bearing(point, waypoint))
@@ -199,7 +199,7 @@ def getInstructionsToWaypoint(waypoint, gpsinfo):
 
 class NavigationFromWaypointsLayer:
     def __init__(self):
-        self.crs = QgsCoordinateReferenceSystem(4326)
+        self.crs = QgsCoordinateReferenceSystem("EPSG:4326")
         itemRegex = {
             "KadasGpxRouteItemRegex": r'^<MapItem(.*)name="KadasGpxRouteItem"(.*)CDATA(.*)]><\/MapItem>',
             "KadasGpxWaypointItemRegex": r'^<MapItem(.*)name="KadasGpxWaypointItem"(.*)CDATA(.*)]><\/MapItem>',
@@ -334,7 +334,7 @@ class NavigationPanel(BASE, WIDGET):
             # "behind the current position"
             qgsdistance = QgsDistanceArea()
             qgsdistance.setSourceCrs(
-                QgsCoordinateReferenceSystem(4326),
+                QgsCoordinateReferenceSystem("EPSG:4326"),
                 QgsProject.instance().transformContext(),
             )
             qgsdistance.setEllipsoid(qgsdistance.sourceCrs().ellipsoidAcronym())
@@ -343,7 +343,7 @@ class NavigationPanel(BASE, WIDGET):
                 (gpsinfo.speed / SPEED_DIVIDE_BY) * REFRESH_RATE_S,
                 math.radians(gpsinfo.direction),
             )
-        origCrs = QgsCoordinateReferenceSystem(4326)
+        origCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         canvasCrs = self.iface.mapCanvas().mapSettings().destinationCrs()
         self.transform = QgsCoordinateTransform(
             origCrs, canvasCrs, QgsProject.instance()
@@ -510,7 +510,7 @@ class NavigationPanel(BASE, WIDGET):
         try:
             """
             center = iface.mapCanvas().center()
-            outCrs = QgsCoordinateReferenceSystem(4326)
+            outCrs = QgsCoordinateReferenceSystem("EPSG:4326")
             canvasCrs = iface.mapCanvas().mapSettings().destinationCrs()
             transform = QgsCoordinateTransform(canvasCrs, outCrs, QgsProject.instance())
             wgspoint = transform.transform(center)
@@ -586,7 +586,7 @@ class NavigationPanel(BASE, WIDGET):
             self.setMessage(self.tr("Cannot connect to GPS"))
         else:
             self.removeOriginalGpsMarker()
-            self.centerPin = KadasPinItem(QgsCoordinateReferenceSystem(4326))
+            self.centerPin = KadasPinItem(QgsCoordinateReferenceSystem("EPSG:4326"))
             self.centerPin.setup(
                 iconPath("navigationcenter.svg"),
                 self.centerPin.anchorX(),
