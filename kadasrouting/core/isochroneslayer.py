@@ -1,7 +1,6 @@
 import json
 import logging
 
-from qgis.PyQt.QtCore import QTextCodec
 from qgis.PyQt.QtGui import QColor
 
 from kadasrouting.utilities import waitcursor, tr
@@ -32,9 +31,8 @@ valhalla = ValhallaClient.getInstance()
 
 def getFeaturesFromResponse(response):
     """Return a list of features from a valhalla response object"""
-    codec = QTextCodec.codecForName("UTF-8")
-    fields = QgsJsonUtils.stringToFields(json.dumps(response), codec)
-    features = QgsJsonUtils.stringToFeatureList(json.dumps(response), fields, codec)
+    fields = QgsJsonUtils.stringToFields(json.dumps(response))
+    features = QgsJsonUtils.stringToFeatureList(json.dumps(response), fields)
     return features
 
 
