@@ -4,7 +4,7 @@ import logging
 from functools import partial
 
 from qgis.PyQt.QtCore import QObject, QSettings
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QAction
 
 from qgis.utils import iface
 

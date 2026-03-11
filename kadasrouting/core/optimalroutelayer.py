@@ -4,8 +4,7 @@ import logging
 import datetime
 
 from qgis.PyQt.QtCore import QTimer, pyqtSignal, Qt
-from qgis.PyQt.QtGui import QColor, QPen, QBrush
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QColor, QPen, QBrush, QAction
 
 from kadas.kadasgui import KadasPinItem, KadasItemPos, KadasItemLayer, KadasGpxRouteItem
 
