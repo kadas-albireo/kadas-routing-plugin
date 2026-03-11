@@ -2,8 +2,8 @@ import os
 import logging
 import json
 import time
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QDesktopWidget
+from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtWidgets import QDesktopWidget
 from pprint import pprint
 
 from kadas.kadasgui import (

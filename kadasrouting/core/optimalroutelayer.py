@@ -3,9 +3,9 @@ import json
 import logging
 import datetime
 
-from PyQt5.QtCore import QTimer, pyqtSignal, Qt
-from PyQt5.QtGui import QColor, QPen, QBrush
-from PyQt5.QtWidgets import QAction
+from qgis.PyQt.QtCore import QTimer, pyqtSignal, Qt
+from qgis.PyQt.QtGui import QColor, QPen, QBrush
+from qgis.PyQt.QtWidgets import QAction
 
 from kadas.kadasgui import KadasPinItem, KadasItemPos, KadasItemLayer, KadasGpxRouteItem
 
@@ -235,7 +235,7 @@ class OptimalRouteLayer(KadasItemLayer):
         # Line color: 005EFF
         line_color = QColor(0, 94, 255)
         self.lineItem.setOutline(QPen(line_color, 5))
-        self.lineItem.setFill(QBrush(line_color, Qt.SolidPattern))
+        self.lineItem.setFill(QBrush(line_color, Qt.BrushStyle.SolidPattern))
 
         self.addItem(self.lineItem)
         for i, pt in enumerate(self.points):

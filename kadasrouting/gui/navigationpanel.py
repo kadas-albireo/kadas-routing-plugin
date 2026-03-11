@@ -5,15 +5,15 @@ import json
 import logging
 import tempfile
 
-from PyQt5 import uic
+from qgis.PyQt import uic
 import re
 from zipfile import ZipFile
 
-from PyQt5.QtGui import QPixmap, QTransform, QPainter, QColor
+from qgis.PyQt.QtGui import QPixmap, QTransform, QPainter, QColor
 
-from PyQt5.QtCore import Qt, QSize, QSettings, QTimer
+from qgis.PyQt.QtCore import Qt, QSize, QSettings, QTimer
 
-from PyQt5.QtWidgets import QListWidgetItem, QListWidget, QLabel, QInputDialog
+from qgis.PyQt.QtWidgets import QListWidgetItem, QListWidget, QLabel, QInputDialog
 
 from qgis.utils import iface
 
@@ -270,7 +270,7 @@ class NavigationPanel(BASE, WIDGET):
         self.iface = KadasPluginInterface.cast(iface)
         self.gpsConnection = None
         self.navLayer = None
-        self.listWaypoints.setSelectionMode(QListWidget.SingleSelection)
+        self.listWaypoints.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
         self.listWaypoints.currentItemChanged.connect(self.selectedWaypointChanged)
         self.listWaypoints.setSpacing(5)
         self.waypointWidgets = []
@@ -478,7 +478,7 @@ class NavigationPanel(BASE, WIDGET):
         compassPixmap = compassPixmap.scaledToWidth(self.FIXED_WIDTH)
         bearingPixmap = QPixmap(iconPath("direction.png"))
         pixmap = QPixmap(self.FIXED_WIDTH, self.FIXED_WIDTH)
-        pixmap.fill(Qt.transparent)
+        pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
         transform = QTransform()
         transform.translate(self.FIXED_WIDTH / 2, self.FIXED_WIDTH / 2)

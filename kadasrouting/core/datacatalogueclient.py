@@ -5,9 +5,9 @@ import logging
 from pyplugin_installer import unzip
 
 from functools import partial
-from PyQt5.QtCore import QUrl, QFile, QDir, QUrlQuery, QEventLoop, Qt, pyqtSignal, QObject
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from PyQt5.QtWidgets import QProgressBar
+from qgis.PyQt.QtCore import QUrl, QFile, QDir, QUrlQuery, QEventLoop, Qt, pyqtSignal, QObject
+from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
+from qgis.PyQt.QtWidgets import QProgressBar
 
 from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis
 from qgis.utils import iface
@@ -89,7 +89,7 @@ class DataCatalogueClient(QObject):
         query.addQueryItem("f", "pjson")
         url.setQuery(query.query())
         response = QgsNetworkAccessManager.blockingGet(QNetworkRequest(QUrl(url)))
-        if response.error() != QNetworkReply.NoError:
+        if response.error() != QNetworkReply.NetworkError.NoError:
             raise Exception(response.errorString())
         responsejson = json.loads(response.content().data())
         LOG.debug("response from data repository: %s" % responsejson)
@@ -167,7 +167,7 @@ class DataCatalogueClient(QObject):
     def _downloadAndUnzip(self, itemid):
         self.progress_bar = QProgressBar()
         self.progress_bar.setMinimum(0)
-        self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.progress_bar.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.progess_message_bar = self.iface.messageBar().createMessage(
             tr("Downloading...")
         )
@@ -200,7 +200,7 @@ class DataCatalogueClient(QObject):
         )
         self.downloader.downloadCanceled.connect(self.download_canceled)
         self.downloader.downloadExited.connect(loop.quit)
-        loop.exec_()
+        loop.exec()
     
     def uninstall(self, itemid):
         path = DataCatalogueClient.folderForDataItem(itemid)

@@ -1,9 +1,9 @@
 import os
 import logging
 
-from PyQt5 import uic
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QWidget
 from kadas.kadasgui import (
     KadasPinItem,
     KadasItemPos,

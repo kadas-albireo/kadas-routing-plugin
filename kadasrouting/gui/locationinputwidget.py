@@ -1,8 +1,8 @@
 import logging
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import QWidget, QHBoxLayout, QToolButton
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import pyqtSignal
 
 from qgis.core import (
     QgsCoordinateReferenceSystem,

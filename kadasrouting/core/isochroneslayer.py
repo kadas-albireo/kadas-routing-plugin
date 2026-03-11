@@ -1,8 +1,8 @@
 import json
 import logging
 
-from PyQt5.QtCore import QTextCodec
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtCore import QTextCodec
+from qgis.PyQt.QtGui import QColor
 
 from kadasrouting.utilities import waitcursor, tr
 

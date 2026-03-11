@@ -2,9 +2,9 @@ import os
 import logging
 import json
 
-from PyQt5 import uic
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDesktopWidget
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QDesktopWidget
 
 from kadas.kadasgui import KadasBottomBar
 

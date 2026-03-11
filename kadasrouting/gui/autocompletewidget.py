@@ -1,11 +1,11 @@
 import json
 import logging
 import re
-from PyQt5.QtCore import Qt, pyqtSignal, QUrl, QUrlQuery
-from PyQt5.QtCore import QObject, QTimer, QEvent, QPoint, QMetaObject
-from PyQt5.QtWidgets import QTreeWidget, QLineEdit, QFrame, QTreeWidgetItem
-from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
-from PyQt5.QtGui import QPalette
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QUrl, QUrlQuery
+from qgis.PyQt.QtCore import QObject, QTimer, QEvent, QPoint, QMetaObject
+from qgis.PyQt.QtWidgets import QTreeWidget, QLineEdit, QFrame, QTreeWidgetItem
+from qgis.PyQt.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from qgis.PyQt.QtGui import QPalette
 
 from qgis.core import QgsSettings
 
@@ -26,16 +26,16 @@ class SuggestCompletion(QObject):
         self._editor = parent
         # pop up
         self._popup = QTreeWidget()
-        self._popup.setWindowFlags(Qt.Popup)
+        self._popup.setWindowFlags(Qt.WindowType.Popup)
         self._popup.setFocusProxy(self._parent)
         self._popup.setMouseTracking(True)
         self._popup.setColumnCount(1)
         self._popup.setUniformRowHeights(True)
         self._popup.setRootIsDecorated(False)
-        self._popup.setEditTriggers(QTreeWidget.NoEditTriggers)
-        self._popup.setSelectionBehavior(QTreeWidget.SelectRows)
-        self._popup.setFrameStyle(QFrame.Box | QFrame.Plain)
-        self._popup.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._popup.setEditTriggers(QTreeWidget.EditTrigger.NoEditTriggers)
+        self._popup.setSelectionBehavior(QTreeWidget.SelectionBehavior.SelectRows)
+        self._popup.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Plain)
+        self._popup.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self._popup.header().hide()
         # timer
         self._timer = None
@@ -57,28 +57,28 @@ class SuggestCompletion(QObject):
         if object != self._popup:
             return False
 
-        if event.type() == QEvent.MouseButtonPress:
+        if event.type() == QEvent.Type.MouseButtonPress:
             self._popup.hide()
             self._editor.setFocus()
             return True
 
-        if event.type() == QEvent.KeyPress:
+        if event.type() == QEvent.Type.KeyPress:
             consumed = False
             key = event.key()
-            if key in [Qt.Key_Enter, Qt.Key_Return]:
+            if key in [Qt.Key.Key_Enter, Qt.Key.Key_Return]:
                 self.done_completion()
                 consumed = True
-            elif key == Qt.Key_Escape:
+            elif key == Qt.Key.Key_Escape:
                 self._editor.setFocus()
                 self._popup.hide()
                 consumed = True
             elif key in [
-                Qt.Key_Up,
-                Qt.Key_Down,
-                Qt.Key_Home,
-                Qt.Key_End,
-                Qt.Key_PageUp,
-                Qt.Key_PageDown,
+                Qt.Key.Key_Up,
+                Qt.Key.Key_Down,
+                Qt.Key.Key_Home,
+                Qt.Key.Key_End,
+                Qt.Key.Key_PageUp,
+                Qt.Key.Key_PageDown,
             ]:
                 pass
             else:
@@ -94,7 +94,7 @@ class SuggestCompletion(QObject):
             return
 
         pallete = self._editor.palette()
-        color = pallete.color(QPalette.Disabled, QPalette.WindowText)
+        color = pallete.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText)
 
         self._popup.setUpdatesEnabled(False)
         self._popup.clear()
@@ -102,8 +102,8 @@ class SuggestCompletion(QObject):
         for choice in choices:
             item = QTreeWidgetItem(self._popup)
             item.setText(0, strip_tags(choice["label"]))
-            item.setData(0, Qt.UserRole, choice["lon"])
-            item.setData(0, Qt.UserRole + 1, choice["lat"])
+            item.setData(0, Qt.ItemDataRole.UserRole, choice["lon"])
+            item.setData(0, Qt.ItemDataRole.UserRole + 1, choice["lat"])
             item.setForeground(0, color)
 
         self._popup.setCurrentItem(self._popup.topLevelItem(0))
@@ -127,8 +127,8 @@ class SuggestCompletion(QObject):
         item = self._popup.currentItem()
         if item:
             label = strip_tags(item.text(0))
-            lon = item.data(0, Qt.UserRole)
-            lat = item.data(0, Qt.UserRole + 1)
+            lon = item.data(0, Qt.ItemDataRole.UserRole)
+            lat = item.data(0, Qt.ItemDataRole.UserRole + 1)
             self._editor.setText(label)
             QMetaObject.invokeMethod(self._editor, "returnPressed")
             selected = {"label": label, "lon": lon, "lat": lat}
@@ -178,7 +178,7 @@ class SuggestCompletion(QObject):
 
     def handle_network_data(self, network_reply):
         choices = []
-        if network_reply.error() == QNetworkReply.NoError:
+        if network_reply.error() == QNetworkReply.NetworkError.NoError:
             data_raw = network_reply.readAll().data()
             try:
                 data = json.loads(data_raw)

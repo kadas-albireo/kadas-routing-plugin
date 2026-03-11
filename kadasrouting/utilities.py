@@ -11,9 +11,9 @@ from datetime import datetime
 from io import StringIO
 from html.parser import HTMLParser
 
-from PyQt5.QtCore import QLocale, QCoreApplication, QSettings, Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMessageBox, QApplication
+from qgis.PyQt.QtCore import QLocale, QCoreApplication, QSettings, Qt
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QMessageBox, QApplication
 
 from qgis.utils import iface
 from qgis.core import (
@@ -72,7 +72,7 @@ def pushWarning(text):
 def waitcursor(method):
     def func(*args, **kw):
         try:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
+            QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             return method(*args, **kw)
         except Exception as ex:
             raise ex
