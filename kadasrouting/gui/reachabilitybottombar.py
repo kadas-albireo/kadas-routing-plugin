@@ -4,7 +4,7 @@ import json
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QDesktopWidget
+from qgis.PyQt.QtWidgets import QApplication
 
 from kadas.kadasgui import KadasBottomBar
 
@@ -88,7 +88,7 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
         self.setCenterAsSelected()
 
         # Handling HiDPI screen, perhaps we can make a ratio of the screen size
-        size = QDesktopWidget().screenGeometry()
+        size = QApplication.primaryScreen().geometry()
         if size.width() >= 3200 or size.height() >= 1800:
             self.setFixedSize(self.size().width(), self.size().height() * 1.5)
 
