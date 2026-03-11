@@ -1,9 +1,9 @@
 import os
 import logging
 
-from PyQt5 import uic
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QWidget
 from kadas.kadasgui import (
     KadasPinItem,
     KadasItemPos,
@@ -76,7 +76,7 @@ class OptimalRouteBottomBar(ValhallaRouteBottomBar, WIDGET):
     def addWaypointPin(self, waypoint):
         """Create a new pin for a waypoint with its symbology"""
         # Create pin with waypoint symbology
-        canvasCrs = QgsCoordinateReferenceSystem(4326)
+        canvasCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         waypointPin = KadasPinItem(canvasCrs)
         waypointPin.setPosition(KadasItemPos(waypoint.x(), waypoint.y()))
         waypointPin.setup(

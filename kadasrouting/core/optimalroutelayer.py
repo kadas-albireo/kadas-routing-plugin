@@ -3,9 +3,8 @@ import json
 import logging
 import datetime
 
-from PyQt5.QtCore import QTimer, pyqtSignal, Qt
-from PyQt5.QtGui import QColor, QPen, QBrush
-from PyQt5.QtWidgets import QAction
+from qgis.PyQt.QtCore import QTimer, pyqtSignal, Qt
+from qgis.PyQt.QtGui import QColor, QPen, QBrush, QAction
 
 from kadas.kadasgui import KadasPinItem, KadasItemPos, KadasItemLayer, KadasGpxRouteItem
 
@@ -235,7 +234,7 @@ class OptimalRouteLayer(KadasItemLayer):
         # Line color: 005EFF
         line_color = QColor(0, 94, 255)
         self.lineItem.setOutline(QPen(line_color, 5))
-        self.lineItem.setFill(QBrush(line_color, Qt.SolidPattern))
+        self.lineItem.setFill(QBrush(line_color, Qt.BrushStyle.SolidPattern))
 
         self.addItem(self.lineItem)
         for i, pt in enumerate(self.points):
@@ -262,7 +261,7 @@ class OptimalRouteLayer(KadasItemLayer):
         closest_segment = None
         qgsdistance = QgsDistanceArea()
         qgsdistance.setSourceCrs(
-            QgsCoordinateReferenceSystem(4326), QgsProject.instance().transformContext()
+            QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject.instance().transformContext()
         )
         qgsdistance.setEllipsoid(qgsdistance.sourceCrs().ellipsoidAcronym())
 
@@ -325,7 +324,7 @@ class OptimalRouteLayer(KadasItemLayer):
                     eta_string = eta.strftime("%H:%M")
 
                     displayed_point = KadasCoordinateFormat.instance().getDisplayString(
-                        closest_point, QgsCoordinateReferenceSystem(4326)
+                        closest_point, QgsCoordinateReferenceSystem("EPSG:4326")
                     )
                     if ", " not in displayed_point:
                         displayed_point = displayed_point.replace(",", ", ")

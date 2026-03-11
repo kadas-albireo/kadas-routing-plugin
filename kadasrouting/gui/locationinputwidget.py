@@ -1,8 +1,8 @@
 import logging
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import QWidget, QHBoxLayout, QToolButton
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import pyqtSignal
 
 from qgis.core import (
     QgsCoordinateReferenceSystem,
@@ -129,7 +129,7 @@ class LocationInputWidget(QWidget):
 
     def updatePoint(self, point, button):
         """When the map tool click the map canvas"""
-        outCrs = QgsCoordinateReferenceSystem(4326)
+        outCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         canvasCrs = self.canvas.mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(canvasCrs, outCrs, QgsProject.instance())
         wgspoint = transform.transform(point)
@@ -150,7 +150,7 @@ class LocationInputWidget(QWidget):
         try:
             if not self.point:
                 return
-            inCrs = QgsCoordinateReferenceSystem(4326)
+            inCrs = QgsCoordinateReferenceSystem("EPSG:4326")
             canvasCrs = self.canvas.mapSettings().destinationCrs()
             transform = QgsCoordinateTransform(inCrs, canvasCrs, QgsProject.instance())
             canvasPoint = transform.transform(self.point)

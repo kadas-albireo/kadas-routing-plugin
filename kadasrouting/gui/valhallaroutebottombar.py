@@ -2,8 +2,8 @@ import os
 import logging
 import json
 import time
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtWidgets import QDesktopWidget
+from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtWidgets import QApplication
 from pprint import pprint
 
 from kadas.kadasgui import (
@@ -109,7 +109,7 @@ class ValhallaRouteBottomBar(KadasBottomBar):
         self.radioAreasToAvoidNone.setChecked(True)
 
         # Handling HiDPI screen, perhaps we can make a ratio of the screen size
-        size = QDesktopWidget().screenGeometry()
+        size = QApplication.primaryScreen().geometry()
         if size.width() >= 3200 or size.height() >= 1800:
             self.setFixedSize(self.size() * 1.5)
 
