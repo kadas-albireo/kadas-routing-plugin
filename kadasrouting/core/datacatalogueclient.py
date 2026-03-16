@@ -9,11 +9,11 @@ from PyQt5.QtCore import QUrl, QFile, QDir, QUrlQuery, QEventLoop, Qt, pyqtSigna
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from PyQt5.QtWidgets import QProgressBar
 
-from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis, QgsSettings, QgsNetworkAccessManager
+from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis, QgsSettings
 from qgis.utils import iface
 
 from kadas.kadasgui import KadasPluginInterface
-from kadasrouting.utilities import appDataDir, waitcursor, pushWarning, pushMessage, tr
+from kadasrouting.utilities import appDataDir, waitcursor, pushWarning, pushMessage, tr, isKadasOffline
 
 LOG = logging.getLogger(__name__)
 
@@ -63,20 +63,10 @@ class DataCatalogueClient(QObject):
         except Exception as e:
             LOG.debug("metadata file is failed to read: %s" % e)
             return None
-            
-    def isOffline(self):
-        is_offline = False     
-        url = QgsSettings().value("/kadas/onlineTestUrl")
-        response = QgsNetworkAccessManager.blockingGet(QNetworkRequest(QUrl(url)))
-            
-        if response.error() != QNetworkReply.NoError:
-            is_offline = True
-        
-        return is_offline
-        
+    
     def getTiles(self):
         remote_tiles = []
-        if not self.isOffline():
+        if not isKadasOffline():
             try:
                 remote_tiles = self.getRemoteTiles()
             except Exception as e:
