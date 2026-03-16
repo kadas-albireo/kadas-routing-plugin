@@ -9,7 +9,7 @@ from PyQt5.QtCore import QUrl, QFile, QDir, QUrlQuery, QEventLoop, Qt, pyqtSigna
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from PyQt5.QtWidgets import QProgressBar
 
-from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis, QgsSettings
+from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis, QgsSettings, QgsNetworkAccessManager
 from qgis.utils import iface
 
 from kadas.kadasgui import KadasPluginInterface
@@ -65,9 +65,13 @@ class DataCatalogueClient(QObject):
             return None
             
     def isOffline(self):
-        is_offline = False
-        if QgsSettings().value("/kadas/isOffline") == "true":
+        is_offline = False     
+        url = QgsSettings().value("/kadas/onlineTestUrl")
+        response = QgsNetworkAccessManager.blockingGet(QNetworkRequest(QUrl(url)))
+            
+        if response.error() != QNetworkReply.NoError:
             is_offline = True
+        
         return is_offline
         
     def getTiles(self):
@@ -79,7 +83,7 @@ class DataCatalogueClient(QObject):
                 pushWarning("Cannot get tiles from the URL because %s " % str(e))
                 remote_tiles = []
         else:
-            pushMessage("KADAS is offline: no data download available.")
+            pushMessage("KADAS is offline and no data download is available.")
         local_tiles = self.getLocalTiles()
         # Merge the tiles
         all_tiles = []
