@@ -123,6 +123,7 @@ class DataItemWidget(QFrame):
                     )
                 )
                 self.data["status"] = DataCatalogueClient.NOT_INSTALLED
+                QgsSettings().setValue("/kadasrouting/activeValhallaTilesID", "")
         elif status == DataCatalogueClient.LOCAL_ONLY:
             if self.radioButton.isChecked():
                 self.resetRadioGroup()
