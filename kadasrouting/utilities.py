@@ -7,14 +7,13 @@ import json
 import logging
 from datetime import datetime
 
-
 from io import StringIO
 from html.parser import HTMLParser
 
-from PyQt5.QtCore import QLocale, QCoreApplication, QSettings, Qt
+from PyQt5.QtCore import QLocale, QCoreApplication, QSettings, Qt, QUrl
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMessageBox, QApplication
-
+from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis.utils import iface
 from qgis.core import (
     QgsCoordinateReferenceSystem,
@@ -22,6 +21,7 @@ from qgis.core import (
     QgsProject,
     Qgis,
 )
+from qgis.core import QgsNetworkAccessManager, QgsSettings
 
 LOG = logging.getLogger(__name__)
 
@@ -68,6 +68,15 @@ def pushMessage(text):
 def pushWarning(text):
     iface.messageBar().pushMessage(tr("Warning"), text, level=Qgis.Warning)
 
+def isKadasOffline():
+    is_offline = False     
+    url = QgsSettings().value("/kadas/onlineTestUrl")
+    response = QgsNetworkAccessManager.blockingGet(QNetworkRequest(QUrl(url)))
+        
+    if response.error() != QNetworkReply.NoError:
+        is_offline = True
+    
+    return is_offline
 
 def waitcursor(method):
     def func(*args, **kw):

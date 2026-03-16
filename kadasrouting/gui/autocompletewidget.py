@@ -9,10 +9,9 @@ from PyQt5.QtGui import QPalette
 
 from qgis.core import QgsSettings
 
-from kadasrouting.utilities import strip_tags
+from kadasrouting.utilities import strip_tags, isKadasOffline
 
 LOG = logging.getLogger(__name__)
-
 
 class SuggestCompletion(QObject):
 
@@ -149,8 +148,9 @@ class SuggestCompletion(QObject):
         text = self._editor.text()
         if self.catch_coordinates(text):
             pass
-        elif text:
-            is_offline = False if QgsSettings().value("/kadas/isOffline") == "false" else True
+        elif text:           
+            is_offline = isKadasOffline()
+            
             LOG.debug("is_offline %s" % is_offline)
             if is_offline:
                 url = QgsSettings().value(

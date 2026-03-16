@@ -9,11 +9,11 @@ from PyQt5.QtCore import QUrl, QFile, QDir, QUrlQuery, QEventLoop, Qt, pyqtSigna
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from PyQt5.QtWidgets import QProgressBar
 
-from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis
+from qgis.core import QgsNetworkAccessManager, QgsFileDownloader, Qgis, QgsSettings
 from qgis.utils import iface
 
 from kadas.kadasgui import KadasPluginInterface
-from kadasrouting.utilities import appDataDir, waitcursor, pushWarning, tr
+from kadasrouting.utilities import appDataDir, waitcursor, pushWarning, pushMessage, tr, isKadasOffline
 
 LOG = logging.getLogger(__name__)
 
@@ -63,13 +63,17 @@ class DataCatalogueClient(QObject):
         except Exception as e:
             LOG.debug("metadata file is failed to read: %s" % e)
             return None
-
+    
     def getTiles(self):
-        try:
-            remote_tiles = self.getRemoteTiles()
-        except Exception as e:
-            pushWarning("Cannot get tiles from the URL because %s " % str(e))
-            remote_tiles = []
+        remote_tiles = []
+        if not isKadasOffline():
+            try:
+                remote_tiles = self.getRemoteTiles()
+            except Exception as e:
+                pushWarning("Cannot get tiles from the URL because %s " % str(e))
+                remote_tiles = []
+        else:
+            pushMessage("KADAS is offline and no data download is available.")
         local_tiles = self.getLocalTiles()
         # Merge the tiles
         all_tiles = []

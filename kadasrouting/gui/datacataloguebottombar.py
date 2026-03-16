@@ -117,12 +117,13 @@ class DataItemWidget(QFrame):
                     ).format(name=self.data["title"])
                 )
             else:
+                self.data["status"] = DataCatalogueClient.NOT_INSTALLED
+                QgsSettings().setValue("/kadasrouting/activeValhallaTilesID", "")
                 pushMessage(
                     self.tr("Map package {name} has been successfully deleted ").format(
                         name=self.data["title"]
                     )
                 )
-                self.data["status"] = DataCatalogueClient.NOT_INSTALLED
         elif status == DataCatalogueClient.LOCAL_ONLY:
             if self.radioButton.isChecked():
                 self.resetRadioGroup()
