@@ -1,18 +1,22 @@
 import os
 import logging
 
-from PyQt5 import uic
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget
-from kadas.kadasgui import (
-    KadasPinItem,
-    KadasItemPos,
-    KadasMapCanvasItemManager,
-)
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QWidget
+
 from kadasrouting.gui.locationinputwidget import LocationInputWidget
 from kadasrouting.utilities import iconPath
 
-from qgis.core import QgsCoordinateReferenceSystem
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsWkbTypes,
+    QgsGeometry,
+    QgsMarkerSymbol,
+    QgsSvgMarkerSymbolLayer,
+)
+from qgis.gui import QgsRubberBand
+from qgis.utils import iface
 
 from kadasrouting.gui.valhallaroutebottombar import ValhallaRouteBottomBar
 
@@ -26,11 +30,12 @@ LOG = logging.getLogger(__name__)
 class OptimalRouteBottomBar(ValhallaRouteBottomBar, WIDGET):
     def __init__(self, canvas, action, plugin):
         self.default_layer_name = "Route"
+        self.canvas = canvas
         super().__init__(canvas, action, plugin)
         self.btnAddWaypoints.setIcon(QIcon(":/kadas/icons/add"))
         self.btnAddWaypoints.setToolTip(self.tr("Add waypoint"))
         self.waypointsSearchBox = LocationInputWidget(
-            canvas, locationSymbolPath=iconPath("pin_bluegray.svg")
+            self.canvas, locationSymbolPath=iconPath("pin_bluegray.svg")
         )
         self.groupBox.layout().addWidget(self.waypointsSearchBox, 0, 0)
         self.btnAddWaypoints.clicked.connect(self.addWaypoints)
@@ -40,8 +45,6 @@ class OptimalRouteBottomBar(ValhallaRouteBottomBar, WIDGET):
         self.waypointsSearchBox.clearSearchBox()
         self.waypoints = []
         self.lineEditWaypoints.clear()
-        for waypointPin in self.waypointPins:
-            KadasMapCanvasItemManager.removeItem(waypointPin)
         self.waypointPins = []
         super().clearPoints()
 
@@ -76,27 +79,32 @@ class OptimalRouteBottomBar(ValhallaRouteBottomBar, WIDGET):
     def addWaypointPin(self, waypoint):
         """Create a new pin for a waypoint with its symbology"""
         # Create pin with waypoint symbology
-        canvasCrs = QgsCoordinateReferenceSystem(4326)
-        waypointPin = KadasPinItem(canvasCrs)
-        waypointPin.setPosition(KadasItemPos(waypoint.x(), waypoint.y()))
-        waypointPin.setup(
-            ":/kadas/icons/waypoint",
-            waypointPin.anchorX(),
-            waypointPin.anchorX(),
-            32,
-            32,
-        )
+        waypointPin = QgsRubberBand(self.canvas, QgsWkbTypes.PointGeometry)
+        waypointPin.setToGeometry(QgsGeometry.fromPointXY(waypoint), QgsCoordinateReferenceSystem("EPSG:4326"))
+
+
+        symbol = QgsMarkerSymbol()
+        symbol.deleteSymbolLayer(0)
+
+        svg_layer = QgsSvgMarkerSymbolLayer(":/kadas/icons/waypoint")
+        # Anchor: center horizontally, bottom vertically
+        svg_layer.setHorizontalAnchorPoint(QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center)
+        svg_layer.setVerticalAnchorPoint(QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Center)
+        svg_layer.setSize(16)
+        symbol.appendSymbolLayer(svg_layer)
+        waypointPin.setSymbol(symbol)
+
         self.waypointPins.append(waypointPin)
-        KadasMapCanvasItemManager.addItem(waypointPin)
+        self.canvas.refresh()
 
     def clearPins(self):
         """Remove all pins from the map
         Not removing the point stored.
         """
         # remove waypoint pins
-        for waypointPin in self.waypointPins:
-            KadasMapCanvasItemManager.removeItem(waypointPin)
+        self.waypointPins = []
         super().clearPins()
+        self.canvas.refresh()
 
     def addPins(self):
         """Add pins for all stored points."""

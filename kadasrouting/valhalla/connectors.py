@@ -4,7 +4,7 @@ import logging
 import json
 from jinja2 import Environment, FileSystemLoader
 
-from PyQt5.QtCore import QObject
+from qgis.PyQt.QtCore import QObject
 
 from qgis.core import QgsSettings
 

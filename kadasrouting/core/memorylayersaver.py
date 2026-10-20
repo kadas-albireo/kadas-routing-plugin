@@ -3,8 +3,8 @@ credits to C. Crook for the original qgis MemoryLayerSaver plugin
 https://github.com/ccrook/QGIS-MemoryLayerSaver-Plugin
 """
 
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QObject, QIODevice, QFile, QDataStream, QFileInfo
+from qgis.PyQt.QtWidgets import QMessageBox
+from qgis.PyQt.QtCore import QObject, QIODevice, QFile, QDataStream, QFileInfo
 from qgis.core import QgsField, QgsFeature, QgsGeometry, QgsMapLayer, QgsProject, Qgis
 import sys
 
@@ -28,10 +28,10 @@ class Writer(QObject):
 
     def open(self):
         self._file = QFile(self._filename)
-        if not self._file.open(QIODevice.WriteOnly):
+        if not self._file.open(QIODevice.OpenModeFlag.WriteOnly):
             raise ValueError("Cannot open " + self._filename)
         self._dstream = QDataStream(self._file)
-        self._dstream.setVersion(QDataStream.Qt_4_5)
+        self._dstream.setVersion(QDataStream.Version.Qt_4_5)
         for c in b"QGis.MemoryLayerData":
             self._dstream.writeUInt8(c)
         # Version of MLD format
@@ -109,10 +109,10 @@ class Reader(QObject):
 
     def open(self):
         self._file = QFile(self._filename)
-        if not self._file.open(QIODevice.ReadOnly):
+        if not self._file.open(QIODevice.OpenModeFlag.ReadOnly):
             raise ValueError("Cannot open " + self._filename)
         self._dstream = QDataStream(self._file)
-        self._dstream.setVersion(QDataStream.Qt_4_5)
+        self._dstream.setVersion(QDataStream.Version.Qt_4_5)
         for c in b"QGis.MemoryLayerData":
 
             ct = self._dstream.readUInt8()

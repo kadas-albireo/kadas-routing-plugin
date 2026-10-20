@@ -1,7 +1,7 @@
 import logging
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtCore import pyqtSignal, Qt
+from qgis.PyQt.QtGui import QColor
 
 from qgis.core import QgsWkbTypes, QgsGeometry
 from qgis.gui import QgsMapTool, QgsRubberBand
@@ -28,7 +28,7 @@ class DrawPolygonMapTool(QgsMapTool):
         self.vertex_count = 1  # two points are dropped initially
 
     def canvasReleaseEvent(self, event):
-        if event.button() == Qt.RightButton:
+        if event.button() == Qt.MouseButton.RightButton:
             if self.rubberBand is None:
                 return
             # TODO: validate geom before firing signal
@@ -39,7 +39,7 @@ class DrawPolygonMapTool(QgsMapTool):
             self.rubberBand = None
             self.vertex_count = 1  # two points are dropped initially
             return
-        elif event.button() == Qt.LeftButton:
+        elif event.button() == Qt.MouseButton.LeftButton:
             if self.rubberBand is None:
                 self.rubberBand = QgsRubberBand(
                     self.canvas, QgsWkbTypes.PolygonGeometry

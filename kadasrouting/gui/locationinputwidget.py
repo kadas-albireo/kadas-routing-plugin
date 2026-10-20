@@ -1,15 +1,21 @@
 import logging
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import QWidget, QHBoxLayout, QToolButton
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import pyqtSignal
 
 from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
-    QgsProject,
+    QgsGeometry,
+    QgsMarkerSymbol, 
     QgsPointXY,
+    QgsProject,
+    QgsSvgMarkerSymbolLayer,
+    QgsWkbTypes,
 )
+from qgis.utils import iface
+from qgis.gui import QgsRubberBand
 
 from kadasrouting.utilities import icon, pushWarning
 
@@ -17,11 +23,6 @@ from kadasrouting.gui.pointcapturemaptool import PointCaptureMapTool
 
 from kadasrouting.gui.autocompletewidget import AutoCompleteWidget
 
-from kadas.kadasgui import (
-    KadasMapCanvasItemManager,
-    KadasPinItem,
-    KadasItemPos,
-)
 
 from .gps import getGpsConnection
 
@@ -39,8 +40,8 @@ class LocationInputWidget(QWidget):
         self,
         canvas,
         locationSymbolPath=":/kadas/icons/pin_red",
-        pinAnchorX=0.5,
-        pinAnchorY=1,
+        pinAnchorX = QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center,
+        pinAnchorY = QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Bottom,
     ):
         QWidget.__init__(self)
         # UI
@@ -79,7 +80,7 @@ class LocationInputWidget(QWidget):
         self.canvas.mapToolSet.connect(self._mapToolSet)
 
         self.point = None
-        self.pin = None
+        self.pinRubberBand = None
         self.locationName = ""
         self._gpsConnection = None
 
@@ -129,7 +130,7 @@ class LocationInputWidget(QWidget):
 
     def updatePoint(self, point, button):
         """When the map tool click the map canvas"""
-        outCrs = QgsCoordinateReferenceSystem(4326)
+        outCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         canvasCrs = self.canvas.mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(canvasCrs, outCrs, QgsProject.instance())
         wgspoint = transform.transform(point)
@@ -150,7 +151,7 @@ class LocationInputWidget(QWidget):
         try:
             if not self.point:
                 return
-            inCrs = QgsCoordinateReferenceSystem(4326)
+            inCrs = QgsCoordinateReferenceSystem("EPSG:4326")
             canvasCrs = self.canvas.mapSettings().destinationCrs()
             transform = QgsCoordinateTransform(inCrs, canvasCrs, QgsProject.instance())
             canvasPoint = transform.transform(self.point)
@@ -160,21 +161,31 @@ class LocationInputWidget(QWidget):
             return
 
         canvasCrs = self.canvas.mapSettings().destinationCrs()
-        self.pin = KadasPinItem(canvasCrs)
-        self.pin.setPosition(KadasItemPos(canvasPoint.x(), canvasPoint.y()))
-        self.pin.setAnchorX(self.pinAnchorX)
-        self.pin.setAnchorY(self.pinAnchorY)
-        self.pin.setFilePath(self.locationSymbolPath)
+        self.pinRubberBand = QgsRubberBand(self.canvas, QgsWkbTypes.PointGeometry)
+
+        symbol = QgsMarkerSymbol()
+        symbol.deleteSymbolLayer(0)
+        svg_layer = QgsSvgMarkerSymbolLayer(self.locationSymbolPath)
+
+        # Anchor: center horizontally, bottom vertically
+        svg_layer.setHorizontalAnchorPoint(QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center)
+        svg_layer.setVerticalAnchorPoint(QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Bottom)
+        svg_layer.setSize(16)
+        symbol.appendSymbolLayer(svg_layer)
+        self.pinRubberBand.setSymbol(symbol)
+        self.pinRubberBand.setToGeometry(QgsGeometry.fromPointXY(canvasPoint), canvasCrs)
         LOG.debug(
-            "self.pin position %s, %s"
-            % (self.pin.position().x(), self.pin.position().y())
+            "self.pinRubberBand geometry %s"
+            % (self.pinRubberBand.asGeometry().asWkt())
         )
-        LOG.debug("pin anchor %s, %s" % (self.pin.anchorX(), self.pin.anchorY()))
-        KadasMapCanvasItemManager.addItem(self.pin)
+        LOG.debug("pin anchor %s, %s" % (svg_layer.horizontalAnchorPoint(), svg_layer.verticalAnchorPoint()))
+        iface.mapCanvas().refresh()
 
     def removePin(self):
-        if self.pin:
-            KadasMapCanvasItemManager.removeItem(self.pin)
+        if self.pinRubberBand:
+            self.pinRubberBand.reset(QgsWkbTypes.PointGeometry)
+            self.pinRubberBand = None
+        iface.mapCanvas().refresh()
 
     def text(self):
         # TODO add getter for the searchbox text.

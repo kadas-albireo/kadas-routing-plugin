@@ -3,8 +3,8 @@ import os
 import logging
 from functools import partial
 
-from PyQt5.QtCore import QObject, QSettings
-from PyQt5.QtWidgets import QAction
+from qgis.PyQt.QtCore import QObject, QSettings
+from qgis.PyQt.QtGui import QAction
 
 from qgis.utils import iface
 
@@ -248,7 +248,7 @@ class RoutingPlugin(QObject):
         show = QSettings().value("kadasrouting/showDisclaimer", True, type=bool)
         if show:
             dialog = DisclaimerDialog(iface.mainWindow())
-            dialog.exec_()
+            dialog.exec()
 
     def toggleDayNight(self, day=True):
         if day:

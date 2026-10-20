@@ -7,7 +7,7 @@ from qgis.core import (
     QgsSingleSymbolRenderer,
     QgsGeometry,
 )
-from PyQt5.QtGui import QColor
+from qgis.PyQt.QtGui import QColor
 from kadasrouting.utilities import transformToWGS, pushWarning
 
 
@@ -16,7 +16,7 @@ class CanvasLayerSaver:
         self,
         name,
         features=None,
-        crs=QgsCoordinateReferenceSystem(4326),
+        crs=QgsCoordinateReferenceSystem("EPSG:4326"),
         color=QColor("lightGray"),
         style=None,
     ):
