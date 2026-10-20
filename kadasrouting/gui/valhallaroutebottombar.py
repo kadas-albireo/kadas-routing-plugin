@@ -8,7 +8,6 @@ from pprint import pprint
 
 from kadas.kadasgui import (
     KadasBottomBar,
-    KadasMapCanvasItemManager,
     KadasLayerSelectionWidget,
 )
 from kadasrouting.gui.locationinputwidget import (
@@ -354,8 +353,6 @@ class ValhallaRouteBottomBar(KadasBottomBar):
         # remove pins and points
         self.originSearchBox.clearSearchBox()
         self.destinationSearchBox.clearSearchBox()
-        KadasMapCanvasItemManager.removeItem(self.originSearchBox.pin)
-        KadasMapCanvasItemManager.removeItem(self.destinationSearchBox.pin)
         self.originSearchBox.deletePoint()
         self.destinationSearchBox.deletePoint()
 

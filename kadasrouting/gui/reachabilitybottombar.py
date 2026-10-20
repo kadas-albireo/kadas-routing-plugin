@@ -5,6 +5,7 @@ import json
 from qgis.PyQt import uic
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QApplication
+from qgis.core import QgsSvgMarkerSymbolLayer
 
 from kadas.kadasgui import KadasBottomBar
 
@@ -49,12 +50,12 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
 
         self.btnCalculate.clicked.connect(self.calculate)
 
-        # Set the anchor to 0.5, 0.5 because the center of the cross needs to be in the position
+        # Set the anchor to center because the center of the cross needs to be in the position
         self.originSearchBox = LocationInputWidget(
             canvas,
             locationSymbolPath=iconPath("blue_cross.svg"),
-            pinAnchorX=0.5,
-            pinAnchorY=0.5,
+            pinAnchorX = QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center,
+            pinAnchorY = QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Center,
         )
         self.layout().addWidget(self.originSearchBox, 0, 1)
 

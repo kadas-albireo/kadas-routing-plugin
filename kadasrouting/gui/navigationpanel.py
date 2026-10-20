@@ -28,17 +28,15 @@ from qgis.core import (
     QgsVectorLayer,
     QgsWkbTypes,
     QgsGeometry,
+    QgsMarkerSymbol, 
+    QgsSvgMarkerSymbolLayer
 )
 
 from qgis.gui import QgsRubberBand
 
 from kadas.kadasgui import (
-    KadasPinItem,
-    KadasItemPos,
-    KadasMapCanvasItemManager,
     KadasPluginInterface,
-    KadasGpxWaypointItem,
-    KadasSymbolItem,
+    # KadasGpxWaypointItem,
 )
 
 from kadasrouting.utilities import formatdist, pushMessage, iconPath
@@ -238,18 +236,19 @@ class NavigationFromWaypointsLayer:
             pass
 
     def _create_gpx_waypoints(self, map_item, key):
-        item = KadasGpxWaypointItem()
-        if key == "KadasGpxWaypointItemRegex":
-            p = map_item[0]["state"]["points"][0]
-            item.addPartFromGeometry(QgsPoint(p[0], p[1]))
-        elif key == "KadasGpxRouteItemRegex":
-            # FIXME: this will need more stuff to work, for the routes we must
-            # add a way to track the passed waypoints, and use the layer internal points
-            # as polyline instead
-            for p in map_item[0]["state"]["points"][0]:
-                item.addPartFromGeometry(QgsPoint(p[0], p[1]))
-        item.setName(map_item[0]["props"]["name"])
-        return item
+        pass
+        # item = KadasGpxWaypointItem()
+        # if key == "KadasGpxWaypointItemRegex":
+        #     p = map_item[0]["state"]["points"][0]
+        #     item.addPartFromGeometry(QgsPoint(p[0], p[1]))
+        # elif key == "KadasGpxRouteItemRegex":
+        #     # FIXME: this will need more stuff to work, for the routes we must
+        #     # add a way to track the passed waypoints, and use the layer internal points
+        #     # as polyline instead
+        #     for p in map_item[0]["state"]["points"][0]:
+        #         item.addPartFromGeometry(QgsPoint(p[0], p[1]))
+        # item.setName(map_item[0]["props"]["name"])
+        # return item
 
     def items(self):
         for i in self.mapItems:
@@ -418,13 +417,16 @@ class NavigationPanel(BASE, WIDGET):
 
     def refreshCanvas(self, point, gpsinfo):
         canvasPoint = self.transform.transform(point)
-        self.centerPin.setPosition(KadasItemPos(point.x(), point.y()))
+        self.centerPinRubberBand.setToGeometry(QgsGeometry.fromPointXY(canvasPoint), QgsCoordinateReferenceSystem("EPSG:4326"))
         self.iface.mapCanvas().setCenter(canvasPoint)
         # stop rotating the map like a crazy when the user is almost still,
         # i.e. rotate only if we move faster than 1m/s
         if gpsinfo.speed > GPS_MIN_SPEED:
             self.iface.mapCanvas().setRotation(-gpsinfo.direction)
-            self.centerPin.setAngle(0)
+            s = self.centerPinRubberBand.symbol().clone()
+            s.setAngle(0)
+            self.centerPinRubberBand.setSymbol(s)
+
         self.iface.mapCanvas().refresh()
         self.rubberband.reset(QgsWkbTypes.LineGeometry)
 
@@ -560,7 +562,7 @@ class NavigationPanel(BASE, WIDGET):
         self.textBrowser.setStyleSheet("background-color: {};".format(color))
 
     def startNavigation(self):
-        self.centerPin = None
+        self.centerPinRubberBand = None
         self.waypointLayer = None
         self.warningShown = False
         self.originalGpsMarker = None
@@ -586,20 +588,24 @@ class NavigationPanel(BASE, WIDGET):
             self.setMessage(self.tr("Cannot connect to GPS"))
         else:
             self.removeOriginalGpsMarker()
-            self.centerPin = KadasPinItem(QgsCoordinateReferenceSystem("EPSG:4326"))
-            self.centerPin.setup(
-                iconPath("navigationcenter.svg"),
-                self.centerPin.anchorX(),
-                self.centerPin.anchorX(),
-                32,
-                32,
-            )
-            # For some reason the first time shown, the direction of the center pin is following the map canvas.
-            # The line below is needed to neutralize the direction of the center pin (to make it points up)
-            self.centerPin.setAngle(
+            self.centerPinRubberBand = QgsRubberBand(self.iface.mapCanvas(), QgsWkbTypes.PointGeometry)
+            symbol = QgsMarkerSymbol()
+            symbol.deleteSymbolLayer(0)
+
+            svg_layer = QgsSvgMarkerSymbolLayer(iconPath("navigationcenter.svg"))
+
+            # Anchor: center horizontally, bottom vertically
+            svg_layer.setHorizontalAnchorPoint(QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center)
+            svg_layer.setVerticalAnchorPoint(QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Center)
+            svg_layer.setSize(32)
+            symbol.setAngle(
                 -self.gpsConnection.currentGPSInformation().direction
             )
-            KadasMapCanvasItemManager.addItem(self.centerPin)
+            symbol.appendSymbolLayer(svg_layer)
+            self.centerPinRubberBand.setSymbol(symbol)
+            # For some reason the first time shown, the direction of the center pin is following the map canvas.
+            # The line below is needed to neutralize the direction of the center pin (to make it points up)
+            iface.mapCanvas().refresh()
             self.updateNavigationInfo()
             self.timer.start(REFRESH_RATE_S * 1000)
             self.timer.timeout.connect(self.updateNavigationInfo)
@@ -618,8 +624,8 @@ class NavigationPanel(BASE, WIDGET):
             except TypeError as e:
                 LOG.debug(e)
         try:
-            if self.centerPin is not None:
-                KadasMapCanvasItemManager.removeItem(self.centerPin)
+            if self.centerPinRubberBand is not None:
+                self.centerPinRubberBand = None
         except Exception:
             # centerPin might have been deleted
             pass
@@ -636,25 +642,27 @@ class NavigationPanel(BASE, WIDGET):
         self.iface.mapCanvas().refresh()
 
     def removeOriginalGpsMarker(self):
-        for item in KadasMapCanvasItemManager.items():
-            if item.itemName() == "Symbol":
-                item.__class__ = KadasSymbolItem
-                try:
-                    if item.filePath() == ":/kadas/icons/gpsarrow":
-                        self.originalGpsMarker = item
-                        KadasMapCanvasItemManager.removeItem(self.originalGpsMarker)
-                except AttributeError:
-                    pass
+        pass
+        # for item in KadasMapCanvasItemManager.items():
+        #     if item.itemName() == "Symbol":
+        #         item.__class__ = KadasSymbolItem
+        #         try:
+        #             if item.filePath() == ":/kadas/icons/gpsarrow":
+        #                 self.originalGpsMarker = item
+        #                 KadasMapCanvasItemManager.removeItem(self.originalGpsMarker)
+        #         except AttributeError:
+        #             pass
 
     def addOriginalGpsMarker(self):
-        try:
-            if self.originalGpsMarker:
-                KadasMapCanvasItemManager.addItem(self.originalGpsMarker)
-        except RuntimeError:
-            # if the GPS connection has been aborted, then just pass
-            pass
-        finally:
-            self.originalGpsMarker = None
+        pass
+        # try:
+        #     if self.originalGpsMarker:
+        #         KadasMapCanvasItemManager.addItem(self.originalGpsMarker)
+        # except RuntimeError:
+        #     # if the GPS connection has been aborted, then just pass
+        #     pass
+        # finally:
+        #     self.originalGpsMarker = None
 
 
 class WaypointItem(QListWidgetItem):
