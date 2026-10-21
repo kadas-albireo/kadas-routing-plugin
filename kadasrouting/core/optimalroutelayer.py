@@ -124,6 +124,16 @@ class OptimalRouteLayer(QgsAnnotationLayer):
         )
         self.actionAddAsRegularLayer.triggered.connect(self.addAsRegularLayer)
 
+        # So the plugin can recognise it after project load as an optimal route layer instead of a generic annotation layer
+        self.setCustomProperty("kadasrouting/optimalroutelayer_class", self.LAYER_TYPE)
+
+    def clone(self):
+        layer = OptimalRouteLayer(self.name())
+        self.copyCommonProperties(layer) if hasattr(self, "copyCommonProperties") else None
+        for item_id, item in self.items():
+            layer.addItem(item.clone())
+        return layer
+
     def setResponse(self, response):
         self.response = response
 

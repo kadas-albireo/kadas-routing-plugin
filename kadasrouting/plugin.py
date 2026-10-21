@@ -8,9 +8,10 @@ from qgis.PyQt.QtGui import QAction
 
 from qgis.utils import iface
 
-from qgis.core import QgsApplication
+from qgis.core import QgsApplication, QgsProject
 
 from kadas.kadasgui import KadasPluginInterface
+from kadasrouting.core.optimalroutelayer import OptimalRouteLayer
 
 from kadasrouting.utilities import icon, pushWarning, tr
 from kadasrouting.core.optimalroutelayer import OptimalRouteLayerType
@@ -128,6 +129,8 @@ class RoutingPlugin(QObject):
         self.catalogDataChanged()
         
         self.dataCatalogueBar.hide()
+
+        QgsProject.instance().readProject.connect(self.on_project_read)
     
     def catalogDataChanged(self):
         if self.dataCatalogueBar.radioButtonGroup.checkedButton() == None:
@@ -165,6 +168,8 @@ class RoutingPlugin(QObject):
             self.dayNightAction, self.iface.PLUGIN_MENU, self.iface.GPS_TAB
         )
         self._saver.detachFromProject()
+
+        QgsProject.instance().readProject.disconnect(self.on_project_read)
 
     def _showPanel(self, action, show):
         function = self.actionsToggled[action]
@@ -255,3 +260,19 @@ class RoutingPlugin(QObject):
             pushWarning("Show day map")
         else:
             pushWarning("show night map")
+
+    def on_project_read(self):
+        project = QgsProject.instance()
+        for layer in list(project.mapLayers().values()):
+            if layer.customProperty("kadasrouting/optimalroutelayer_class") == OptimalRouteLayer.LAYER_TYPE:
+                # Perform any necessary initialization for the optimal route layer
+                newLayer = OptimalRouteLayer(layer.name())
+                for item in layer.items().values():
+                    newLayer.addItem(item.clone())
+                root = project.layerTreeRoot()
+                node = root.findLayer(layer.id())
+                parent = node.parent()
+                idx = parent.children().index(node)
+                project.addMapLayer(newLayer, False)
+                parent.insertLayer(idx, newLayer)
+                project.removeMapLayer(layer.id())
