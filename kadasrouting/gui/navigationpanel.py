@@ -36,7 +36,7 @@ from qgis.gui import QgsRubberBand
 
 from kadas.kadasgui import (
     KadasPluginInterface,
-    # KadasGpxWaypointItem,
+    KadasGpxWaypointAnnotationItem
 )
 
 from kadasrouting.utilities import formatdist, pushMessage, iconPath
@@ -236,19 +236,20 @@ class NavigationFromWaypointsLayer:
             pass
 
     def _create_gpx_waypoints(self, map_item, key):
-        pass
-        # item = KadasGpxWaypointItem()
-        # if key == "KadasGpxWaypointItemRegex":
-        #     p = map_item[0]["state"]["points"][0]
-        #     item.addPartFromGeometry(QgsPoint(p[0], p[1]))
-        # elif key == "KadasGpxRouteItemRegex":
-        #     # FIXME: this will need more stuff to work, for the routes we must
-        #     # add a way to track the passed waypoints, and use the layer internal points
-        #     # as polyline instead
-        #     for p in map_item[0]["state"]["points"][0]:
-        #         item.addPartFromGeometry(QgsPoint(p[0], p[1]))
-        # item.setName(map_item[0]["props"]["name"])
-        # return item
+        item = None
+        if key == "KadasGpxWaypointItemRegex":
+            p = map_item[0]["state"]["points"][0]
+            item = KadasGpxWaypointAnnotationItem( QgsPointXY(p[0], p[1]) )
+            item.setName(map_item[0]["props"]["name"])
+            return item
+
+        elif key == "KadasGpxRouteItemRegex":
+            pass
+            # FIXME: this will need more stuff to work, for the routes we must
+            # add a way to track the passed waypoints, and use the layer internal points
+            # as polyline instead
+            # for p in map_item[0]["state"]["points"][0]:
+            #     item.addPartFromGeometry(QgsPoint(p[0], p[1]))            
 
     def items(self):
         for i in self.mapItems:
@@ -528,7 +529,7 @@ class NavigationPanel(BASE, WIDGET):
             return [item, item2, item3]
             """
             return [
-                item for item in layer.items() if isinstance(item, KadasGpxWaypointItem)
+                item for item in layer.items() if isinstance(item, KadasGpxWaypointAnnotationItem)
             ]
         except Exception as e:
             LOG.warning(e)
@@ -668,8 +669,7 @@ class NavigationPanel(BASE, WIDGET):
 class WaypointItem(QListWidgetItem):
     def __init__(self, waypoint):
         super().__init__(waypoint.name())
-        pos = waypoint.position()
-        self.point = QgsPointXY(pos.x(), pos.y())
+        self.point = waypoint.geometry()
         self.name = waypoint.name()
 
 
@@ -684,8 +684,7 @@ class WaypointItemWidget(QLabel):
 
     def setWaypointText(self, gpsinfo):
         self.gpsinfo = gpsinfo
-        pos = self.waypoint.position()
-        point = QgsPointXY(pos.x(), pos.y())
+        point = self.waypoint.geometry()
         instructions = getInstructionsToWaypoint(point, gpsinfo)
         template = (
             waypoint_miniature_selected_html_template
