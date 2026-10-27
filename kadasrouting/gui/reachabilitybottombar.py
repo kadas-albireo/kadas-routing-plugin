@@ -2,9 +2,10 @@ import os
 import logging
 import json
 
-from PyQt5 import uic
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QDesktopWidget
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.core import QgsSvgMarkerSymbolLayer
 
 from kadas.kadasgui import KadasBottomBar
 
@@ -49,12 +50,12 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
 
         self.btnCalculate.clicked.connect(self.calculate)
 
-        # Set the anchor to 0.5, 0.5 because the center of the cross needs to be in the position
+        # Set the anchor to center because the center of the cross needs to be in the position
         self.originSearchBox = LocationInputWidget(
             canvas,
             locationSymbolPath=iconPath("blue_cross.svg"),
-            pinAnchorX=0.5,
-            pinAnchorY=0.5,
+            pinAnchorX = QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center,
+            pinAnchorY = QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Center,
         )
         self.layout().addWidget(self.originSearchBox, 0, 1)
 
@@ -88,7 +89,7 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
         self.setCenterAsSelected()
 
         # Handling HiDPI screen, perhaps we can make a ratio of the screen size
-        size = QDesktopWidget().screenGeometry()
+        size = QApplication.primaryScreen().geometry()
         if size.width() >= 3200 or size.height() >= 1800:
             self.setFixedSize(self.size().width(), self.size().height() * 1.5)
 
@@ -103,7 +104,7 @@ class ReachabilityBottomBar(KadasBottomBar, WIDGET):
         point = self.originSearchBox.point
 
         # Convert point to canvas CRS
-        inCrs = QgsCoordinateReferenceSystem(4326)
+        inCrs = QgsCoordinateReferenceSystem("EPSG:4326")
         canvasCrs = self.canvas.mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(inCrs, canvasCrs, QgsProject.instance())
         canvasPoint = transform.transform(point)

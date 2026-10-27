@@ -2,9 +2,9 @@ import os
 import datetime
 import logging
 
-from PyQt5 import uic
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QFrame,
     QPushButton,

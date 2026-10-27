@@ -3,11 +3,11 @@ import json
 import logging
 import datetime
 
-from PyQt5.QtCore import QTimer, pyqtSignal, Qt
-from PyQt5.QtGui import QColor, QPen, QBrush
-from PyQt5.QtWidgets import QAction
+from qgis.PyQt.QtCore import QTimer, pyqtSignal, Qt
+from qgis.PyQt.QtGui import QColor, QPen, QBrush, QAction
+from qgis.core import QgsPoint, QgsAnnotationLayer, QgsMarkerSymbol, QgsSvgMarkerSymbolLayer
 
-from kadas.kadasgui import KadasPinItem, KadasItemPos, KadasItemLayer, KadasGpxRouteItem
+from kadas.kadasgui import KadasGpxRouteAnnotationItem, KadasPinAnnotationItem
 
 from kadasrouting.utilities import (
     iconPath,
@@ -87,36 +87,34 @@ class NotInRouteException(Exception):
     pass
 
 
-class RoutePointMapItem(KadasPinItem):
-
+class RoutePointMapItem(KadasPinAnnotationItem):
     hasChanged = pyqtSignal()
+    def __init__(self, crs):
+        self.setCrs(crs)
+        super().__init__()
 
     def itemName(self):
         return "Route point"
 
     def edit(self, context, pos, settings):
-        super().edit(context, pos, settings)
+        # super().edit(context, pos, settings)
         self.hasChanged.emit()
 
 
-class OptimalRouteLayer(KadasItemLayer):
-
+class OptimalRouteLayer(QgsAnnotationLayer):
     LAYER_TYPE = "optimalroute"
-
     def __init__(self, name):
-        KadasItemLayer.__init__(
-            self,
-            name,
-            QgsCoordinateReferenceSystem("EPSG:4326"),
-            OptimalRouteLayer.LAYER_TYPE,
-        )
+        project = QgsProject.instance()
+        options = QgsAnnotationLayer.LayerOptions(project.transformContext())
+        super().__init__(name, options)
+        self.setCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
         self.geom = None
         self.response = None
         self.points = []
-        self.pins = []
+        self.pinsId = []
         self.profile = None
         self.costingOptions = {}
-        self.lineItem = None
+        self.lineItemId = None
         self.valhalla = ValhallaClient.getInstance()
         self.timer = QTimer()
         self.timer.setSingleShot(True)
@@ -126,14 +124,24 @@ class OptimalRouteLayer(KadasItemLayer):
         )
         self.actionAddAsRegularLayer.triggered.connect(self.addAsRegularLayer)
 
+        # So the plugin can recognise it after project load as an optimal route layer instead of a generic annotation layer
+        self.setCustomProperty("kadasrouting/optimalroutelayer_class", self.LAYER_TYPE)
+
+    def clone(self):
+        layer = OptimalRouteLayer(self.name())
+        self.copyCommonProperties(layer) if hasattr(self, "copyCommonProperties") else None
+        for item_id, item in self.items():
+            layer.addItem(item.clone())
+        return layer
+
     def setResponse(self, response):
         self.response = response
 
     def clear(self):
         items = self.items()
         for itemId in items.keys():
-            self.takeItem(itemId)
-        self.pins = []
+            self.removeItem(itemId)
+        self.pinsId = []
         self.maneuvers = {}
 
     def hasRoute(self):
@@ -145,8 +153,9 @@ class OptimalRouteLayer(KadasItemLayer):
     @waitcursor
     def updateFromPins(self):
         try:
-            for i, pin in enumerate(self.pins):
-                self.points[i] = QgsPointXY(pin.position())
+            for i, pin in enumerate(self.pinsId):
+                pinId = self.pinsId[i]
+                self.points[i] = self.item(pinId).geometry()
             response = self.valhalla.route(
                 self.points, self.profile, self.costingOptions
             )
@@ -211,10 +220,10 @@ class OptimalRouteLayer(KadasItemLayer):
             self.distance += round(leg["summary"]["length"], 3)
         qgis_coords = [QgsPointXY(x, y) for x, y in coordinates]
         self.geom = QgsGeometry.fromPolylineXY(qgis_coords)
-        self.lineItem = KadasGpxRouteItem()
-        self.lineItem.addPartFromGeometry(self.geom.constGet())
-        self.lineItem.setName("route")
-        self.lineItem.setNumber("1")
+        lineItem = KadasGpxRouteAnnotationItem()
+        lineItem.addPartFromGeometry(self.geom.constGet())
+        lineItem.setName("route")
+        lineItem.setNumber("1")
         # Format string for duration
         duration_hour = int(self.duration) // 3600
         duration_minute = (int(self.duration) % 3600) // 60
@@ -231,30 +240,39 @@ class OptimalRouteLayer(KadasItemLayer):
             formatted_hour=formatted_hour,
             formatted_minute=formatted_minute,
         )
-        self.lineItem.setTooltip(tooltip)
+        lineItem.setTooltip(tooltip)
         # Line color: 005EFF
         line_color = QColor(0, 94, 255)
-        self.lineItem.setOutline(QPen(line_color, 5))
-        self.lineItem.setFill(QBrush(line_color, Qt.SolidPattern))
+        lineItem.setOutline(QPen(line_color, 5))
+        lineItem.setFill(QBrush(line_color, Qt.BrushStyle.SolidPattern))
 
-        self.addItem(self.lineItem)
+        if self.lineItemId is not None:
+            self.removeItem(self.lineItemId)
+            self.lineItemId = None
+
+        self.lineItemId = self.addItem(lineItem)
         for i, pt in enumerate(self.points):
             pin = RoutePointMapItem(epsg4326)
-            pin.setPosition(KadasItemPos(pt.x(), pt.y()))
+            pin.setGeometry( QgsPoint(pt.x(), pt.y()) )
             if i == 0:
-                pin.setFilePath(iconPath("pin_origin.svg"))
-                pin.setName(self.tr("Origin Point"))
+                svg_path = iconPath("pin_origin.svg")
             elif i == len(self.points) - 1:
-                pin.setFilePath(iconPath("pin_destination.svg"))
-                pin.setName(self.tr("Destination Point"))
+                svg_path = iconPath("pin_destination.svg")
             else:
-                pin.setup(
-                    ":/kadas/icons/waypoint", pin.anchorX(), pin.anchorX(), 32, 32
-                )
-                pin.setName(self.tr("Waypoint {point_index}").format(point_index=i))
+                svg_path = ":/kadas/icons/waypoint"
+            
+            symbol = QgsMarkerSymbol()
+            symbol.deleteSymbolLayer(0)
+            svg_layer = QgsSvgMarkerSymbolLayer(svg_path)
+            # Anchor: center horizontally, bottom vertically
+            svg_layer.setHorizontalAnchorPoint(QgsSvgMarkerSymbolLayer.HorizontalAnchorPoint.Center)
+            svg_layer.setVerticalAnchorPoint(QgsSvgMarkerSymbolLayer.VerticalAnchorPoint.Center)
+            svg_layer.setSize(16)
+            symbol.appendSymbolLayer(svg_layer)
+            pin.setSymbol(symbol)
+
             pin.hasChanged.connect(self.pinHasChanged)
-            self.pins.append(pin)
-            self.addItem(pin)
+            self.pinsId.append(self.addItem(pin))
 
     def maneuverForPoint(self, pt, speed):
         min_dist = MAX_DISTANCE_FOR_NAVIGATION
@@ -262,7 +280,7 @@ class OptimalRouteLayer(KadasItemLayer):
         closest_segment = None
         qgsdistance = QgsDistanceArea()
         qgsdistance.setSourceCrs(
-            QgsCoordinateReferenceSystem(4326), QgsProject.instance().transformContext()
+            QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject.instance().transformContext()
         )
         qgsdistance.setEllipsoid(qgsdistance.sourceCrs().ellipsoidAcronym())
 
@@ -325,7 +343,7 @@ class OptimalRouteLayer(KadasItemLayer):
                     eta_string = eta.strftime("%H:%M")
 
                     displayed_point = KadasCoordinateFormat.instance().getDisplayString(
-                        closest_point, QgsCoordinateReferenceSystem(4326)
+                        closest_point, QgsCoordinateReferenceSystem("EPSG:4326")
                     )
                     if ", " not in displayed_point:
                         displayed_point = displayed_point.replace(",", ", ")
@@ -369,7 +387,7 @@ class OptimalRouteLayer(KadasItemLayer):
         return True
 
     def writeXml(self, node, doc, context):
-        KadasItemLayer.writeXml(self, node, doc, context)
+        super().writeXml(node, doc, context)
         element = node.toElement()
         # write plugin layer type to project  (essential to be read from project)
         element.setAttribute("type", "plugin")
