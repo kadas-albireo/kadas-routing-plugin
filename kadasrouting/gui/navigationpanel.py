@@ -36,7 +36,7 @@ from qgis.gui import QgsRubberBand
 
 from kadas.kadasgui import (
     KadasPluginInterface,
-    KadasGpxWaypointAnnotationItem
+    KadasGpxWaypointAnnotationItem,
 )
 
 from kadasrouting.utilities import formatdist, pushMessage, iconPath
@@ -643,27 +643,21 @@ class NavigationPanel(BASE, WIDGET):
         self.iface.mapCanvas().refresh()
 
     def removeOriginalGpsMarker(self):
-        pass
-        # for item in KadasMapCanvasItemManager.items():
-        #     if item.itemName() == "Symbol":
-        #         item.__class__ = KadasSymbolItem
-        #         try:
-        #             if item.filePath() == ":/kadas/icons/gpsarrow":
-        #                 self.originalGpsMarker = item
-        #                 KadasMapCanvasItemManager.removeItem(self.originalGpsMarker)
-        #         except AttributeError:
-        #             pass
+        for i in iface.mapCanvas().scene().items():
+            if type(i).__name__ == "KadasGpsMarker":
+                i.setVisible(False)
 
     def addOriginalGpsMarker(self):
-        pass
-        # try:
-        #     if self.originalGpsMarker:
-        #         KadasMapCanvasItemManager.addItem(self.originalGpsMarker)
-        # except RuntimeError:
-        #     # if the GPS connection has been aborted, then just pass
-        #     pass
-        # finally:
-        #     self.originalGpsMarker = None
+        try:
+            for i in iface.mapCanvas().scene().items():
+                
+                if type(i).__name__ == "KadasGpsMarker":
+                    i.setVisible(True)
+        except RuntimeError:
+            # if the GPS connection has been aborted, then just pass
+            pass
+        finally:
+            self.originalGpsMarker = None
 
 
 class WaypointItem(QListWidgetItem):
